@@ -11,8 +11,11 @@ $dashDepartment=$dashPrimary['department']??'Municipio';
     <div class="hero-meta"><span><?=htmlspecialchars($dashRole)?></span><span><?=htmlspecialchars($dashDepartment)?></span><span><?=user_is_global($user)?'Alcance municipal':'Alcance restringido'?></span></div>
   </div>
   <div class="dashboard-hero-actions">
-    <label class="compact-control">Ejercicio<select id="yearSelect"></select></label>
-    <?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="btn" href="?view=nuevo-movimiento">Registrar movimiento</a><?php endif;?>
+    <label class="compact-control dashboard-year-filter">
+      <span class="dashboard-year-filter-label">Ejercicio</span>
+      <select id="yearSelect" aria-label="Filtrar por ejercicio"></select>
+    </label>
+    <?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="btn dashboard-register-btn" href="?view=nuevo-movimiento">Registrar movimiento</a><?php endif;?>
   </div>
 </section>
 <div class="kpi-grid">

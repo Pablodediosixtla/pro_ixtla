@@ -161,3 +161,11 @@ La V4.3 mantiene la lógica de negocio y servicios de la V4.2, pero actualiza la
 - jerarquía visual de usuarios y mejor lectura de presupuestos, solicitudes y bitácoras.
 
 La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.php`.
+
+## V4.4.0 — Ajuste móvil de dashboard
+
+- En móvil se elimina el bloque verde informativo del dashboard y se conserva únicamente un selector compacto de ejercicio.
+- El botón de nuevo movimiento del bloque principal se oculta en móvil porque la acción rápida `+` permanece disponible en la barra superior.
+- Los cuatro totalizadores financieros pasan de carrusel horizontal a una cuadrícula 2x2, con el mismo lenguaje visual compacto de Solicitudes y Aclaraciones.
+- Se agrega versionado de assets (`?v=VERSION`) para evitar que Azure/navegadores mantengan CSS o JS anterior después de un despliegue.
+- La vista de escritorio conserva el encabezado institucional completo.

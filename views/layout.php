@@ -22,8 +22,9 @@ $pageTitle=$viewTitles[$view]??'Presupuesto';
 $primary=$user['assignments'][0]??[];
 $roleLabel=$primary['role_name']??(user_role_codes($user)[0]??'Usuario');
 $departmentLabel=$primary['department']??'Alcance municipal';
+$assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '1';
 ?><!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#31513f"><title><?=htmlspecialchars($pageTitle)?> | Presupuesto Ixtlahuacán</title><link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/presupuesto.css"></head><body>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#31513f"><title><?=htmlspecialchars($pageTitle)?> | Presupuesto Ixtlahuacán</title><link rel="stylesheet" href="css/styles.css?v=<?=rawurlencode($assetVersion)?>"><link rel="stylesheet" href="css/presupuesto.css?v=<?=rawurlencode($assetVersion)?>"></head><body>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-head"><img src="img/ixtla/main_logo_al_frente.png" alt="Ixtlahuacán al Frente"><button class="icon-btn mobile-only" id="closeSidebar" aria-label="Cerrar menú">✕</button></div>
@@ -61,4 +62,4 @@ $departmentLabel=$primary['department']??'Alcance municipal';
   <?php if(nav_ok($perms,'ACLARACION_CREAR')||nav_ok($perms,'ACLARACION_GESTIONAR')):?><a class="<?=$view==='aclaraciones'?'active':''?>" href="?view=aclaraciones"><span>◌</span><small>Seguimiento</small></a><?php endif;?>
 </nav>
 <div id="toastRoot" class="toast-root"></div><div class="modal-backdrop hidden" id="globalBackdrop"></div>
-<script>window.PROIXTLA_USER=<?=json_encode($user,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;window.PROIXTLA_CSRF=<?=json_encode($_SESSION['csrf']??'')?>;</script><script src="js/app.js"></script><script src="js/<?=$view==='nuevo-movimiento'?'movimientos':$view?>.js"></script></body></html>
+<script>window.PROIXTLA_USER=<?=json_encode($user,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;window.PROIXTLA_CSRF=<?=json_encode($_SESSION['csrf']??'')?>;</script><script src="js/app.js?v=<?=rawurlencode($assetVersion)?>"></script><script src="js/<?=$view==='nuevo-movimiento'?'movimientos':$view?>.js?v=<?=rawurlencode($assetVersion)?>"></script></body></html>
