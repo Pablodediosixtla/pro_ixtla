@@ -1,107 +1,17 @@
-Presupuesto Ixtlahuacán V4.2 - API Gateway Azure
-Schema: ixtla01_dep02
-Version: 4.2.0
-Validación PHP: OK
-Validación JavaScript: OK
+Presupuesto Ixtlahuacán V4.3 - Rediseño responsivo Ixtla
 
-Archivos:
-./.env
-./.env.example
-./.github/workflows/main_pro_ixtla.yml
-./.gitignore
-./ACTUALIZAR_SIN_TOCAR_ENV.sh
-./DEPLOY_AZURE.md
-./MANIFEST.txt
-./README.md
-./VERSION
-./catalogo.drawio
-./css/login.css
-./css/presupuesto.css
-./css/styles.css
-./db/conn/DigiCertGlobalRootCA.crt.pem
-./db/conn/DigiCertGlobalRootG2.crt.pem
-./db/conn/conn_db.php
-./db/lib/audit.php
-./db/lib/auth.php
-./db/lib/bootstrap.php
-./db/lib/budget.php
-./db/lib/response.php
-./db/lib/scope.php
-./db/web/aclaraciones/create.php
-./db/web/aclaraciones/get.php
-./db/web/aclaraciones/list.php
-./db/web/aclaraciones/message.php
-./db/web/aclaraciones/status.php
-./db/web/auth/login.php
-./db/web/auth/logout.php
-./db/web/auth/me.php
-./db/web/bitacora/list.php
-./db/web/dashboard/resumen.php
-./db/web/departamentos/list.php
-./db/web/departamentos/save.php
-./db/web/movimientos/cancel.php
-./db/web/movimientos/create.php
-./db/web/movimientos/file.php
-./db/web/movimientos/get.php
-./db/web/movimientos/list.php
-./db/web/presupuestos/list.php
-./db/web/presupuestos/save.php
-./db/web/roles/list.php
-./db/web/roles/save.php
-./db/web/solicitudes/create.php
-./db/web/solicitudes/list.php
-./db/web/solicitudes/status.php
-./db/web/subitems/list.php
-./db/web/subitems/save.php
-./db/web/system/health.php
-./db/web/system/schema-check.php
-./db/web/usuarios/change_password.php
-./db/web/usuarios/list.php
-./db/web/usuarios/options.php
-./db/web/usuarios/save.php
-./img/.gitkeep
-./img/ixtla/main_logo.png
-./img/ixtla/main_logo_al_frente.png
-./img/ixtla/main_logo_shield.png
-./img/ixtla/municipio_1.png
-./img/ixtla/municipio_2.png
-./img/ixtla/portadaLogin.png
-./api.php
-./index.php
-./js/aclaraciones.js
-./js/app.js
-./js/bitacora.js
-./js/dashboard.js
-./js/departamentos.js
-./js/login.js
-./js/movimientos.js
-./js/presupuestos.js
-./js/roles.js
-./js/solicitudes.js
-./js/subitems.js
-./js/usuarios.js
-./scripts/check_project.sh
-./sql/00_create_schema.sql
-./sql/01_security_catalogs.sql
-./sql/02_budget_movements.sql
-./sql/03_followups_audit.sql
-./sql/04_views.sql
-./sql/05_seed_demo.sql
-./sql/06_validate_install.sql
-./sql/07_demo_credentials.sql
-./sql/99_install_all.sql
-./uploads/presupuesto/.gitkeep
-./uploads/presupuesto/.htaccess
-./views/aclaraciones.php
-./views/bitacora.php
-./views/dashboard.php
-./views/departamentos.php
-./views/layout.php
-./views/login.php
-./views/movimientos.php
-./views/nuevo-movimiento.php
-./views/presupuestos.php
-./views/roles.php
-./views/solicitudes.php
-./views/subitems.php
-./views/usuarios.php
+Version: 4.3.0
+Schema: ixtla01_dep02
+API: api.php (gateway único)
+
+Ajustes V4.3:
+- Rediseño web con identidad Ixtlahuacán: verde bosque, salvia y acento rojo institucional.
+- Sidebar institucional con navegación agrupada por operación, administración y control.
+- Dashboard ejecutivo con cabecera contextual, KPIs, accesos rápidos y paneles financieros.
+- Registro de movimientos dividido en secciones y flujo visual guiado.
+- Tablas convertidas automáticamente a tarjetas legibles en teléfonos.
+- Navegación inferior móvil y menú lateral con backdrop.
+- Formularios/modales optimizados para pantallas pequeñas.
+- Usuarios muestran flujo jerárquico Admin/Presidencia > Director > Supervisor > Subordinado.
+- Se conservan API, servicios, permisos, jerarquía y esquema de base sin cambios funcionales.
+- .env preservado localmente y excluido de Git por .gitignore.

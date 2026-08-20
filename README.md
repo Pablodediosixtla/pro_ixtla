@@ -146,3 +146,18 @@ php scripts/set_demo_passwords.php
 ```
 
 El script solicita la contraseña de forma interactiva y genera el hash con `password_hash()` en tiempo de ejecución. Así, ningún hash o secreto queda versionado en Git.
+
+## V4.3 - Rediseño responsivo Ixtla
+
+La V4.3 mantiene la lógica de negocio y servicios de la V4.2, pero actualiza la experiencia web y móvil:
+
+- identidad visual alineada a Ixtlahuacán;
+- sidebar institucional para escritorio;
+- dashboard ejecutivo y KPIs más legibles;
+- navegación rápida inferior para móvil;
+- tablas responsivas que se convierten en tarjetas;
+- registro de movimientos con flujo guiado por etapas;
+- formularios y modales preparados para operación táctil;
+- jerarquía visual de usuarios y mejor lectura de presupuestos, solicitudes y bitácoras.
+
+La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.php`.
