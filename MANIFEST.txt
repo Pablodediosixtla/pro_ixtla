@@ -1,6 +1,6 @@
-Presupuesto Ixtlahuacán V4 - DEP02 DB Ready
+Presupuesto Ixtlahuacán V4.2 - API Gateway Azure
 Schema: ixtla01_dep02
-Version: 4.0.0
+Version: 4.2.0
 Validación PHP: OK
 Validación JavaScript: OK
 
@@ -66,6 +66,7 @@ Archivos:
 ./img/ixtla/municipio_1.png
 ./img/ixtla/municipio_2.png
 ./img/ixtla/portadaLogin.png
+./api.php
 ./index.php
 ./js/aclaraciones.js
 ./js/app.js

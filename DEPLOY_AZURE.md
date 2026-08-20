@@ -49,7 +49,7 @@ AZURE_WEBAPP_PUBLISH_PROFILE
 Abrir:
 
 ```text
-/db/web/system/health.php
+/api.php?route=system/health
 ```
 
 Confirmar:

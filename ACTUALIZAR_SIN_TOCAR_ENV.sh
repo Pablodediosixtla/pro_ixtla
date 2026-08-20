@@ -33,8 +33,11 @@ if [[ -n "$BACKUP" ]]; then
   fi
   echo "Configuración .env conservada; DB_NAME actualizado a ixtla01_dep02."
 else
-  cp "$SOURCE_DIR/.env" "$TARGET_DIR/.env"
-  echo "No existía .env en destino; se colocó la configuración recuperada del proyecto."
+  cp "$SOURCE_DIR/.env.example" "$TARGET_DIR/.env"
+  if grep -q '^DB_NAME=' "$TARGET_DIR/.env"; then
+    sed -i.bak 's/^DB_NAME=.*/DB_NAME=ixtla01_dep02/' "$TARGET_DIR/.env" && rm -f "$TARGET_DIR/.env.bak"
+  fi
+  echo "No existía .env en destino; se creó desde .env.example. Completa las credenciales localmente."
 fi
 
 echo "Proyecto actualizado en: $TARGET_DIR"

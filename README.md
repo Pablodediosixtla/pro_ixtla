@@ -108,15 +108,15 @@ DB_CONNECT_TIMEOUT=8
 - `db/web/aclaraciones/` — seguimiento tipo conversación
 - `db/web/bitacora/` — auditoría
 - `db/web/dashboard/` — KPIs
-- `db/web/system/health.php` — disponibilidad del App Service y conexión al schema
-- `db/web/system/schema-check.php` — validación de objetos para administradores
+- `api.php?route=system/health` — disponibilidad del App Service y conexión al schema
+- `api.php?route=system/schema-check` — validación de objetos para administradores
 
 ## Prueba de salud
 
 Después del despliegue:
 
 ```text
-https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net/db/web/system/health.php
+https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net/api.php?route=system/health
 ```
 
 Debe mostrar `database.reachable=true`, `active_schema=ixtla01_dep02` y `schema_ok=true`.

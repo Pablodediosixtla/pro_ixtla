@@ -1,6 +1,6 @@
 const App={
   user:window.PROIXTLA_USER||{},csrf:window.PROIXTLA_CSRF||'',
-  async api(url,opts={}){const o={...opts};o.headers={...(o.headers||{})};if(o.body&&!(o.body instanceof FormData)){o.headers['Content-Type']='application/json';if(typeof o.body!=='string')o.body=JSON.stringify(o.body);}if((o.method||'GET').toUpperCase()!=='GET')o.headers['X-CSRF-Token']=this.csrf;const r=await fetch(url,o);const text=await r.text();let j;try{j=JSON.parse(text)}catch{throw new Error(`El servicio respondió contenido no válido (HTTP ${r.status})`)}if(!r.ok||!j.ok)throw new Error(j.error||'Error de servicio');return j.data},
+  async api(url,opts={}){const firstQ=url.indexOf('?');if(firstQ>=0){const secondQ=url.indexOf('?',firstQ+1);if(secondQ>=0)url=url.slice(0,secondQ)+'&'+url.slice(secondQ+1);}const o={...opts};o.headers={...(o.headers||{})};if(o.body&&!(o.body instanceof FormData)){o.headers['Content-Type']='application/json';if(typeof o.body!=='string')o.body=JSON.stringify(o.body);}if((o.method||'GET').toUpperCase()!=='GET')o.headers['X-CSRF-Token']=this.csrf;const r=await fetch(url,o);const text=await r.text();let j;try{j=JSON.parse(text)}catch{throw new Error(`El servicio respondió contenido no válido (HTTP ${r.status})`)}if(!r.ok||!j.ok)throw new Error(j.error||'Error de servicio');return j.data},
   money(v){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(v||0))},
   date(v){if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})},
   toast(msg,type='ok'){const root=document.getElementById('toastRoot');if(!root)return;const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;root.appendChild(el);setTimeout(()=>el.remove(),3600)},
@@ -13,4 +13,4 @@ const App={
 window.App=App;
 document.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',()=>App.closeModals()));document.getElementById('globalBackdrop')?.addEventListener('click',()=>App.closeModals());
 const sidebar=document.getElementById('sidebar');document.getElementById('openSidebar')?.addEventListener('click',()=>sidebar?.classList.add('open'));document.getElementById('closeSidebar')?.addEventListener('click',()=>sidebar?.classList.remove('open'));
-document.getElementById('logoutBtn')?.addEventListener('click',async()=>{try{await App.api('db/web/auth/logout.php',{method:'POST',body:{}})}catch{}location.href='index.php'});
+document.getElementById('logoutBtn')?.addEventListener('click',async()=>{try{await App.api('api.php?route=auth/logout',{method:'POST',body:{}})}catch{}location.href='index.php'});
