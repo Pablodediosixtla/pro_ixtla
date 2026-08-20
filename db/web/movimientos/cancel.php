@@ -1,0 +1,4 @@
+<?php
+require_once dirname(__DIR__, 2) . '/lib/bootstrap.php';
+require_method('POST');require_csrf();$user=require_budget_role(['ADMIN']);$in=json_input();$id=(int)($in['id']??0);$reason=trim((string)($in['motivo']??''));if($id<=0||$reason==='')json_response(['ok'=>false,'error'=>'ID y motivo son obligatorios'],400);
+$con=conectar();if(!$con)json_response(['ok'=>false,'error'=>'No fue posible conectar a la base de datos'],500);$account=(int)$user['account_id'];$st=$con->prepare("UPDATE presupuesto_movimiento SET status='CANCELADO',motivo_cancelacion=?,cancelado_por_cuenta_id=?,cancelado_at=NOW(),updated_at=NOW() WHERE id=? AND status='REGISTRADO'");$st->bind_param('sii',$reason,$account,$id);$st->execute();$affected=$st->affected_rows;$st->close();$con->close();if($affected===0)json_response(['ok'=>false,'error'=>'El movimiento no existe o ya está cancelado'],409);json_response(['ok'=>true]);
