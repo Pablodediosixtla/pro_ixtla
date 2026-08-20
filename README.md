@@ -169,3 +169,10 @@ La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.p
 - Los cuatro totalizadores financieros pasan de carrusel horizontal a una cuadrícula 2x2, con el mismo lenguaje visual compacto de Solicitudes y Aclaraciones.
 - Se agrega versionado de assets (`?v=VERSION`) para evitar que Azure/navegadores mantengan CSS o JS anterior después de un despliegue.
 - La vista de escritorio conserva el encabezado institucional completo.
+
+## V4.5 - Resumen por departamento y subcategorías
+- La disponibilidad del Inicio permite abrir el resumen de cada departamento.
+- Las tarjetas de Presupuestos usan **Ver resumen** en lugar de editar directamente la asignación.
+- El resumen muestra asignado, disponible, ejercido, porcentaje, ejecución mensual y todas las subcategorías disponibles.
+- Cada subcategoría muestra su participación en el gasto y permite consultar sus registros de salida.
+- El detalle de subcategoría conserva el alcance jerárquico definido para el usuario.

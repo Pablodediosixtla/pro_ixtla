@@ -12,6 +12,7 @@ const App={
     if(!r.ok||!j.ok)throw new Error(j.error||'Error de servicio');return j.data
   },
   money(v){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(v||0))},
+  escape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]))},
   date(v){if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})},
   toast(msg,type='ok'){const root=document.getElementById('toastRoot');if(!root)return;const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;root.appendChild(el);setTimeout(()=>el.remove(),3600)},
   years(select){if(!select)return;const y=new Date().getFullYear();select.innerHTML='';for(let i=y+1;i>=y-4;i--){const o=document.createElement('option');o.value=i;o.textContent=i;if(i===y)o.selected=true;select.appendChild(o)}},

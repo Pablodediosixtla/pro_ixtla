@@ -21,6 +21,7 @@ $routes = [
 
     'departamentos/list' => 'db/web/departamentos/list.php',
     'departamentos/save' => 'db/web/departamentos/save.php',
+    'departamentos/resumen' => 'db/web/departamentos/resumen.php',
 
     'usuarios/list' => 'db/web/usuarios/list.php',
     'usuarios/options' => 'db/web/usuarios/options.php',
@@ -35,6 +36,7 @@ $routes = [
 
     'subitems/list' => 'db/web/subitems/list.php',
     'subitems/save' => 'db/web/subitems/save.php',
+    'subitems/detalle' => 'db/web/subitems/detalle.php',
 
     'solicitudes/list' => 'db/web/solicitudes/list.php',
     'solicitudes/create' => 'db/web/solicitudes/create.php',

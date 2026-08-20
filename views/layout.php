@@ -17,7 +17,7 @@ function nav_icon(string $name): string {
     ];
     return '<svg viewBox="0 0 24 24" aria-hidden="true">'.($icons[$name]??$icons['home']).'</svg>';
 }
-$viewTitles=['dashboard'=>'Resumen','departamentos'=>'Departamentos','usuarios'=>'Usuarios y jerarquía','roles'=>'Roles y permisos','presupuestos'=>'Presupuestos','subitems'=>'Sub-items','solicitudes'=>'Solicitudes','movimientos'=>'Movimientos','nuevo-movimiento'=>'Registrar movimiento','aclaraciones'=>'Aclaraciones y seguimiento','bitacora'=>'Bitácora'];
+$viewTitles=['dashboard'=>'Resumen','departamentos'=>'Departamentos','usuarios'=>'Usuarios y jerarquía','roles'=>'Roles y permisos','presupuestos'=>'Presupuestos','subitems'=>'Sub-items','solicitudes'=>'Solicitudes','movimientos'=>'Movimientos','nuevo-movimiento'=>'Registrar movimiento','aclaraciones'=>'Aclaraciones y seguimiento','bitacora'=>'Bitácora','departamento-resumen'=>'Resumen de departamento','subcategoria-detalle'=>'Detalle de subcategoría'];
 $pageTitle=$viewTitles[$view]??'Presupuesto';
 $primary=$user['assignments'][0]??[];
 $roleLabel=$primary['role_name']??(user_role_codes($user)[0]??'Usuario');
@@ -32,7 +32,7 @@ $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '
   <nav class="nav-list">
     <div class="nav-section-label">GENERAL</div>
     <a class="<?=$view==='dashboard'?'active':''?>" href="?view=dashboard"><span class="nav-icon"><?=nav_icon('home')?></span><span>Resumen</span></a>
-    <?php if(nav_ok($perms,'PRESUPUESTO_VER')):?><a class="<?=$view==='presupuestos'?'active':''?>" href="?view=presupuestos"><span class="nav-icon"><?=nav_icon('wallet')?></span><span>Presupuestos</span></a><?php endif;?>
+    <?php if(nav_ok($perms,'PRESUPUESTO_VER')):?><a class="<?=in_array($view,['presupuestos','departamento-resumen','subcategoria-detalle'],true)?'active':''?>" href="?view=presupuestos"><span class="nav-icon"><?=nav_icon('wallet')?></span><span>Presupuestos</span></a><?php endif;?>
 
     <?php if(nav_ok($perms,'SOLICITUD_CREAR')||nav_ok($perms,'SOLICITUD_APROBAR')||nav_ok($perms,'MOVIMIENTO_VER')):?><div class="nav-section-label">OPERACIÓN</div><?php endif;?>
     <?php if(nav_ok($perms,'SOLICITUD_CREAR')||nav_ok($perms,'SOLICITUD_APROBAR')):?><a class="<?=$view==='solicitudes'?'active':''?>" href="?view=solicitudes"><span class="nav-icon"><?=nav_icon('file')?></span><span>Solicitudes</span></a><?php endif;?>

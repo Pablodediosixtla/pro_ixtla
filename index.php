@@ -11,7 +11,8 @@ if (!isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
 $allowed = [
     'dashboard','departamentos','usuarios','roles','presupuestos','subitems',
-    'solicitudes','movimientos','nuevo-movimiento','aclaraciones','bitacora'
+    'solicitudes','movimientos','nuevo-movimiento','aclaraciones','bitacora',
+    'departamento-resumen','subcategoria-detalle'
 ];
 $view = $_GET['view'] ?? 'dashboard';
 if (!in_array($view, $allowed, true)) {
@@ -29,6 +30,8 @@ $viewPermissions = [
     'nuevo-movimiento'  => ['MOVIMIENTO_ENTRADA_CREAR','MOVIMIENTO_SALIDA_CREAR'],
     'aclaraciones'      => ['ACLARACION_CREAR','ACLARACION_GESTIONAR'],
     'bitacora'          => ['BITACORA_VER'],
+    'departamento-resumen' => ['PRESUPUESTO_VER'],
+    'subcategoria-detalle' => ['PRESUPUESTO_VER','MOVIMIENTO_VER'],
 ];
 
 if (isset($viewPermissions[$view]) && !user_has_any_permission($user, $viewPermissions[$view])) {
