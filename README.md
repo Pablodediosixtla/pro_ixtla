@@ -1,105 +1,159 @@
-# Presupuesto Ixtlahuacán — V1
+# Presupuesto Ixtlahuacán — V2
 
-Aplicación web PHP 8.2 + MySQL para control presupuestal municipal. La estructura sigue el patrón del proyecto CARPRIX proporcionado: raíz PHP, `css/`, `js/`, `img/`, `views/`, `db/conn/`, `db/web/` y `.github/workflows/`.
+Aplicación web PHP + MySQL para control presupuestal municipal. Mantiene la estructura del proyecto `pro_ixtla` (`css/`, `js/`, `img/`, `views/`, `db/conn/`, `db/web/`, `sql/` y `.github/workflows/`) y adopta el lenguaje visual de **Ixtla App** mediante sus logotipos, paleta institucional y recursos gráficos.
 
-## 1. Clonar en Visual Studio Code
+## Qué cambia en esta V2
 
-```bash
-cd ~/Documents
+- Login visual renovado con identidad de Ixtla App y composición fotográfica.
+- `AUTH_MODE=demo`: permite entrar sin consultar `empleado_cuenta`.
+- `DATA_MODE=demo`: dashboard, departamentos, sub-items, presupuestos, entradas, salidas, folios y bitácora funcionan con datos de demostración guardados en la sesión.
+- Servicios PHP viven dentro de **este mismo proyecto** (`db/web/...`), por lo que no es necesario llamar a servicios publicados en `ixtla-app.com`.
+- `AUTH_MODE=db` y `DATA_MODE=db` habilitan la conexión real a Azure MySQL usando variables de entorno.
+- Endpoint de diagnóstico: `db/web/system/health.php?check_db=1` (requiere sesión).
+- No se incluyen credenciales reales en `.env.example`.
 
-git clone https://github.com/Pablodediosixtla/pro_ixtla.git
-cd pro_ixtla
-code .
+## 1. Modo revisión inmediato
 
-git remote -v
-git branch --show-current
-```
+La aplicación usa `demo` por defecto si no existen variables de entorno.
 
-Si `code .` no está disponible, abre VS Code y usa **File > Open Folder...** sobre `pro_ixtla`.
-
-## 2. Configuración local
+Local:
 
 ```bash
 cp .env.example .env
+php -S localhost:8080
 ```
 
-Edita `.env` con las credenciales de la misma base Azure MySQL usada por el proyecto DB de referencia. `.env` está ignorado por Git.
+Abre:
 
-Ejecuta los scripts SQL en este orden:
+```text
+http://localhost:8080
+```
+
+En el login puedes usar **Entrar directamente a revisión**. No se valida ninguna tabla de usuarios y tampoco se requiere conexión a base de datos.
+
+## 2. Modos disponibles
+
+### Revisión completa sin DB
+
+```env
+AUTH_MODE=demo
+DATA_MODE=demo
+```
+
+Sirve para validar UX, navegación y flujo funcional completo.
+
+### Login temporal + datos reales
+
+```env
+AUTH_MODE=demo
+DATA_MODE=db
+```
+
+Permite entrar sin validar usuarios, pero todos los catálogos y movimientos se consultan contra MySQL.
+
+### Producción completa
+
+```env
+AUTH_MODE=db
+DATA_MODE=db
+```
+
+El login valida `empleado_cuenta`, `empleado`, `empleado_rol` y `rol`; el módulo usa las tablas presupuestales reales.
+
+## 3. Variables de Azure
+
+En **App Service > Environment variables / Application settings** configura, cuando quieras usar DB:
+
+```text
+AUTH_MODE=db
+DATA_MODE=db
+DB_HOST=...
+DB_PORT=3306
+DB_NAME=...
+DB_USER=...
+DB_PASS=...
+DB_SSL=true
+DB_SSL_CA=db/conn/DigiCertGlobalRootG2.crt.pem
+APP_URL=https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net
+APP_TIMEZONE=America/Mexico_City
+```
+
+Para probar primero el backend real manteniendo el login de revisión usa:
+
+```text
+AUTH_MODE=demo
+DATA_MODE=db
+```
+
+## 4. Servicios locales del proyecto
+
+```text
+db/web/auth/login.php
+db/web/auth/logout.php
+db/web/auth/me.php
+
+db/web/dashboard/resumen.php
+
+db/web/departamentos/list.php
+db/web/departamentos/employees.php
+db/web/departamentos/save.php
+
+db/web/subitems/list.php
+db/web/subitems/save.php
+
+db/web/presupuestos/save.php
+
+db/web/movimientos/list.php
+db/web/movimientos/get.php
+db/web/movimientos/create.php
+db/web/movimientos/cancel.php
+db/web/movimientos/file.php
+
+db/web/system/health.php
+```
+
+Todos se consumen con rutas relativas, por ejemplo:
+
+```text
+db/web/auth/login.php
+```
+
+por lo que navegador y servicio están en el mismo dominio de `pro-ixtla`.
+
+## 5. DDL
+
+Mantiene los scripts:
 
 1. `sql/00_precheck.sql`
 2. `sql/01_presupuesto_schema.sql`
 3. `sql/02_seed_catalogos.sql`
-4. `sql/03_bootstrap_permiso.sql` (edita el username antes de ejecutar)
+4. `sql/03_bootstrap_permiso.sql`
 
-Arranque local:
+No ejecutes los scripts nuevamente si las tablas ya fueron creadas y contienen información que debas conservar sin antes revisar el DDL.
 
-```bash
-php -S localhost:8080
+## 6. GitHub / Azure
+
+El workflow incluido despliega `main` sobre la Web App:
+
+```text
+pro-ixtla
 ```
 
-Abre `http://localhost:8080`.
+Requiere el Repository Secret:
 
-## 3. Dependencias existentes reutilizadas
+```text
+AZURE_WEBAPP_PUBLISH_PROFILE
+```
 
-La aplicación reutiliza las tablas encontradas en el proyecto DB proporcionado:
-
-- `departamento`
-- `empleado`
-- `empleado_cuenta`
-- `rol`
-- `empleado_rol`
-
-No se recrean para evitar colisiones con la plataforma municipal actual.
-
-## 4. Tablas nuevas del módulo Presupuesto
-
-- `presupuesto_departamento`
-- `presupuesto_subitem`
-- `presupuesto_usuario_permiso`
-- `presupuesto_folio_anual`
-- `presupuesto_movimiento`
-- `presupuesto_movimiento_archivo`
-
-El disponible se calcula como:
-
-`Presupuesto asignado + Entradas registradas - Salidas registradas`
-
-Los movimientos cancelados no afectan el disponible.
-
-## 5. Azure Web App
-
-Dominio objetivo:
-
-`https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net`
-
-En **Azure App Service > Configuration > Application settings** agrega las mismas variables de `.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `DB_SSL`, `DB_SSL_CA`, `APP_URL`, `APP_TIMEZONE` y opcionalmente `BUDGET_BOOTSTRAP_ADMIN_USERNAME`).
-
-Para GitHub Actions agrega el secreto:
-
-`AZURE_WEBAPP_PUBLISH_PROFILE`
-
-con el Publish Profile de la Web App. El workflow incluido despliega la rama `main` a la aplicación `pro-ixtla-c7azh2cagpfvfede`.
-
-## 6. Flujo Git recomendado
+## 7. Git
 
 ```bash
 git status
 git add .
-git commit -m "V1 plataforma de presupuesto Ixtlahuacan"
+git commit -m "V2 modo demo y estilo Ixtla App"
 git push origin main
 ```
 
-## 7. Funcionalidad incluida
+## Seguridad
 
-- Login usando `empleado_cuenta` y `password_verify`.
-- Sesión PHP segura y token CSRF para operaciones de escritura.
-- Dashboard con asignado, entradas, salidas, disponible y resumen por departamento.
-- Catálogo y edición de departamentos reutilizando la tabla municipal actual.
-- Asignación de presupuesto anual por departamento.
-- Gestión de sub-items globales o por departamento.
-- Registro de entradas y salidas con folio anual automático.
-- Evidencia PDF/JPG/JPEG/PNG de hasta 10 MB.
-- Bitácora con filtros y detalle de movimientos.
-- Cancelación auditada de movimientos para usuarios ADMIN.
-- Responsive layout para escritorio y móvil.
+El proyecto nuevo no incluye usuario ni contraseña real de MySQL. Las credenciales deben mantenerse únicamente en `.env` local o en las Application Settings de Azure.

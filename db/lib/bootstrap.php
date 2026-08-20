@@ -36,6 +36,25 @@ function env_value(string $key, ?string $default = null): ?string {
     return $value === false ? $default : $value;
 }
 
+function env_bool(string $key, bool $default = false): bool {
+    $raw = env_value($key, $default ? 'true' : 'false');
+    return in_array(strtolower(trim((string)$raw)), ['1','true','yes','on','si','sí'], true);
+}
+
+function app_auth_mode(): string {
+    $mode = strtolower(trim((string)env_value('AUTH_MODE', 'demo')));
+    return in_array($mode, ['demo','db'], true) ? $mode : 'demo';
+}
+
+function app_data_mode(): string {
+    $mode = strtolower(trim((string)env_value('DATA_MODE', 'demo')));
+    return in_array($mode, ['demo','db'], true) ? $mode : 'demo';
+}
+
+function auth_uses_demo(): bool { return app_auth_mode() === 'demo'; }
+function data_uses_demo(): bool { return app_data_mode() === 'demo'; }
+function app_is_review_mode(): bool { return auth_uses_demo() || data_uses_demo(); }
+
 function app_timezone(): string {
     return env_value('APP_TIMEZONE', 'America/Mexico_City') ?: 'America/Mexico_City';
 }
@@ -63,3 +82,4 @@ require_once project_root() . '/db/conn/conn_db.php';
 require_once __DIR__ . '/response.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/budget.php';
+require_once __DIR__ . '/demo_store.php';
