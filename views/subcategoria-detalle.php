@@ -28,8 +28,22 @@ $requestedYear=(int)($_GET['year']??date('Y'));
 <section class="panel subcategory-movements-panel">
   <div class="panel-head subcategory-table-head">
     <div><span class="eyebrow">REGISTROS DE SALIDA</span><h2>Detalle de movimientos</h2><p class="muted">Consulta folio, concepto, beneficiario, monto y usuario que registró cada salida.</p></div>
-    <label class="subcategory-search"><span>⌕</span><input id="subcategorySearch" type="search" placeholder="Buscar folio, concepto o persona"></label>
   </div>
-  <div class="table-wrap"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Concepto</th><th>Otorgado a</th><th>Registrado por</th><th>Monto</th><th>Seguimiento</th><th></th></tr></thead><tbody id="subcategoryMovementTable"><tr><td colspan="8" class="empty-state">Cargando movimientos…</td></tr></tbody></table></div>
+
+  <label class="subcategory-search" for="subcategorySearch">
+    <span class="subcategory-search-icon" aria-hidden="true">⌕</span>
+    <input id="subcategorySearch" type="search" autocomplete="off" placeholder="Buscar folio, concepto o persona">
+  </label>
+
+  <div class="subcategory-movement-table table-wrap">
+    <table>
+      <thead><tr><th>Folio</th><th>Fecha</th><th>Concepto</th><th>Otorgado a</th><th>Registrado por</th><th>Monto</th><th>Seguimiento</th><th></th></tr></thead>
+      <tbody id="subcategoryMovementTable"><tr><td colspan="8" class="empty-state">Cargando movimientos…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="subcategory-activity-list" id="subcategoryMovementCards" aria-live="polite">
+    <div class="empty-state subcategory-card-empty">Cargando movimientos…</div>
+  </div>
 </section>
 <script>window.PROIXTLA_DEPARTMENT_ID=<?=json_encode($departmentId)?>;window.PROIXTLA_SUBITEM_ID=<?=json_encode($subitemId)?>;window.PROIXTLA_REQUESTED_YEAR=<?=json_encode($requestedYear)?>;</script>

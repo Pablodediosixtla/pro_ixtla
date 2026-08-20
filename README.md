@@ -176,3 +176,10 @@ La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.p
 - El resumen muestra asignado, disponible, ejercido, porcentaje, ejecución mensual y todas las subcategorías disponibles.
 - Cada subcategoría muestra su participación en el gasto y permite consultar sus registros de salida.
 - El detalle de subcategoría conserva el alcance jerárquico definido para el usuario.
+
+## V4.6 - Movimientos compactos y expandibles en móvil
+- El buscador del detalle de subcategoría se ajusta al ancho disponible y evita superposición con el texto.
+- En móvil, los registros dejan de mostrarse como tarjetas de tabla extensas y pasan a una lista compacta tipo actividad.
+- Cada movimiento muestra de inicio el folio, concepto, fecha/beneficiario y el monto de salida con signo negativo.
+- Al tocar un registro se expande para mostrar otorgado a, usuario que registró, fecha, seguimiento, referencia y acceso al movimiento completo.
+- En escritorio se conserva la tabla detallada existente.

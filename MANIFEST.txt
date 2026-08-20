@@ -1,10 +1,8 @@
-./.env
 ./.env.example
 ./.github/workflows/main_pro_ixtla.yml
 ./.gitignore
 ./ACTUALIZAR_SIN_TOCAR_ENV.sh
 ./DEPLOY_AZURE.md
-./MANIFEST.txt
 ./README.md
 ./README_ACTUALIZACION_ENV.md
 ./README_ENV_RECUPERADO.md
@@ -90,6 +88,8 @@
 ./sql/06_validate_install.sql
 ./sql/07_demo_credentials.sql
 ./sql/99_install_all.sql
+./uploads/presupuesto/.gitkeep
+./uploads/presupuesto/.htaccess
 ./views/aclaraciones.php
 ./views/bitacora.php
 ./views/dashboard.php

@@ -444,3 +444,154 @@
 @media(max-width:380px){
   .department-kpi-grid,.subcategory-kpi-grid{gap:6px}.department-kpi-card{padding:9px;gap:7px}.department-kpi-icon{width:30px;height:30px}.department-kpi-card strong{font-size:.83rem}.category-meta span:last-child{display:none}
 }
+
+/* ================================================================
+   V4.6 · Detalle de subcategoría compacto en móvil
+   - Buscador estable sin superposición.
+   - Registros tipo actividad: folio + monto en primera línea.
+   - Detalle expandible al tocar cada movimiento.
+   ================================================================ */
+.subcategory-movements-panel{display:grid;gap:12px}
+.subcategory-movements-panel .subcategory-table-head{margin-bottom:0}
+.subcategory-search{
+  width:min(100%,460px);
+  min-width:0;
+  height:42px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  align-items:center;
+  gap:5px;
+  padding:0 12px;
+  margin:0;
+  border:1px solid var(--ix-border);
+  border-radius:13px;
+  background:#f8faf8;
+  overflow:hidden;
+}
+.subcategory-search-icon{display:grid;place-items:center;width:28px;height:28px;color:var(--ix-forest);font-size:1rem;line-height:1}
+.subcategory-search input{
+  display:block;
+  width:100%;
+  min-width:0;
+  height:40px;
+  margin:0;
+  padding:0 3px;
+  border:0!important;
+  outline:0;
+  background:transparent;
+  box-shadow:none!important;
+  font:inherit;
+  color:var(--ix-ink);
+}
+.subcategory-search input::placeholder{color:#96a099;opacity:1}
+.subcategory-search:focus-within{border-color:#a9c0b0;box-shadow:0 0 0 3px rgba(49,81,63,.06)}
+.subcategory-activity-list{display:none}
+
+@media(max-width:700px){
+  .subcategory-movements-panel{padding:13px;gap:10px}
+  .subcategory-table-head{gap:2px}
+  .subcategory-table-head .eyebrow{font-size:.55rem}
+  .subcategory-table-head h2{font-size:1rem;margin-top:2px}
+  .subcategory-table-head p{display:none}
+  .subcategory-search{width:100%;height:40px;border-radius:12px;padding:0 9px;grid-template-columns:26px minmax(0,1fr)}
+  .subcategory-search-icon{width:26px;height:26px;font-size:.92rem}
+  .subcategory-search input{height:38px;font-size:.72rem}
+  .subcategory-search input::placeholder{font-size:.7rem}
+
+  .subcategory-movement-table{display:none}
+  .subcategory-activity-list{display:grid;gap:7px}
+  .subcategory-card-empty{padding:18px 10px;background:#f8faf8;border:1px dashed var(--ix-border);border-radius:13px}
+
+  .movement-activity-card{
+    overflow:hidden;
+    border:1px solid #e2eae4;
+    border-radius:15px;
+    background:#fff;
+    box-shadow:0 5px 16px rgba(37,55,42,.045);
+    transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+  }
+  .movement-activity-card.open{border-color:#c8d9cc;box-shadow:0 8px 21px rgba(37,55,42,.08)}
+  .movement-activity-summary{
+    appearance:none;
+    width:100%;
+    min-height:70px;
+    display:grid;
+    grid-template-columns:40px minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    padding:10px 11px;
+    border:0;
+    background:#fff;
+    color:inherit;
+    text-align:left;
+    cursor:pointer;
+  }
+  .movement-activity-summary:active{background:#f8fbf9}
+  .movement-activity-icon{
+    width:40px;
+    height:40px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#f8eceb;
+    color:#b54842;
+    font-size:1.18rem;
+    font-weight:950;
+    line-height:1;
+  }
+  .movement-activity-copy{min-width:0;display:grid;gap:1px}
+  .movement-activity-copy strong{
+    color:var(--ix-ink);
+    font-size:.72rem;
+    font-weight:900;
+    letter-spacing:.005em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .movement-activity-copy>span{
+    display:block;
+    color:#59645c;
+    font-size:.62rem;
+    line-height:1.3;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .movement-activity-copy small{
+    display:block;
+    color:var(--ix-muted);
+    font-size:.52rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .movement-activity-amount{display:grid;justify-items:end;align-items:center;gap:4px;padding-left:5px}
+  .movement-activity-amount strong{font-size:.72rem;color:#b54842;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .movement-activity-chevron{width:22px;height:18px;display:grid;place-items:center;color:#819087;font-size:.82rem;transition:transform .18s ease}
+  .movement-activity-summary[aria-expanded="true"] .movement-activity-chevron{transform:rotate(180deg)}
+
+  .movement-activity-detail{
+    padding:0 11px 11px 61px;
+    border-top:1px solid #edf2ee;
+    background:linear-gradient(180deg,#fbfdfb,#fff);
+  }
+  .movement-activity-detail[hidden]{display:none!important}
+  .movement-activity-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px;padding:11px 0 9px}
+  .movement-activity-detail-grid>div{display:grid;gap:2px;min-width:0}
+  .movement-activity-detail-grid small{font-size:.49rem;text-transform:uppercase;letter-spacing:.055em;font-weight:850;color:var(--ix-muted)}
+  .movement-activity-detail-grid strong{font-size:.59rem;line-height:1.3;color:#435047;overflow-wrap:anywhere}
+  .movement-activity-detail-grid .badge{justify-self:start;font-size:.5rem;padding:4px 7px}
+  .activity-reference{display:block;margin:-1px 0 9px;padding:7px 9px;border-radius:9px;background:#f4f7f5;color:var(--ix-muted);font-size:.53rem;overflow-wrap:anywhere}
+  .movement-activity-open{width:100%;min-height:34px;justify-content:center;padding:7px 10px;font-size:.58rem;border-radius:10px}
+}
+
+@media(max-width:390px){
+  .movement-activity-summary{grid-template-columns:36px minmax(0,1fr) auto;gap:8px;padding:9px}
+  .movement-activity-icon{width:36px;height:36px;font-size:1.05rem}
+  .movement-activity-copy strong{font-size:.68rem}
+  .movement-activity-copy>span{font-size:.58rem}
+  .movement-activity-amount strong{font-size:.65rem}
+  .movement-activity-detail{padding-left:53px;padding-right:9px}
+  .movement-activity-detail-grid{grid-template-columns:1fr}
+}
