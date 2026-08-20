@@ -1,20 +1,4 @@
-<div class="page-head-row">
-  <div><h2>Panorama general</h2><p class="muted">Presupuesto asignado, ejercicio y disponibilidad por departamento.</p></div>
-  <label class="inline-field">Ejercicio <select id="dashboardYear"></select></label>
-</div>
-<div class="kpi-grid" id="dashboardKpis">
-  <article class="kpi-card"><span class="kpi-icon green">▣</span><small>Presupuesto asignado</small><strong data-kpi="asignado">$0.00</strong></article>
-  <article class="kpi-card"><span class="kpi-icon teal">↙</span><small>Entradas</small><strong data-kpi="entradas">$0.00</strong></article>
-  <article class="kpi-card"><span class="kpi-icon orange">↗</span><small>Salidas ejercidas</small><strong data-kpi="salidas">$0.00</strong></article>
-  <article class="kpi-card"><span class="kpi-icon blue">◉</span><small>Disponible</small><strong data-kpi="disponible">$0.00</strong></article>
-</div>
-<div class="two-col">
-  <article class="panel">
-    <div class="panel-head"><div><h3>Ejecución mensual</h3><p class="muted">Entradas y salidas registradas</p></div></div>
-    <div id="monthlyBars" class="monthly-bars"></div>
-  </article>
-  <article class="panel">
-    <div class="panel-head"><div><h3>Departamentos</h3><p class="muted">Disponible y porcentaje ejercido</p></div><a href="index.php?view=departamentos">Ver todos</a></div>
-    <div id="departmentSummary" class="summary-list"></div>
-  </article>
-</div>
+<section class="page-head"><div><p class="muted">Visión financiera de tu alcance autorizado.</p></div><label class="compact-control">Ejercicio<select id="yearSelect"></select></label></section>
+<div class="kpi-grid"><article class="kpi-card"><span class="kpi-icon green">💼</span><small>Presupuesto asignado</small><strong id="kpiAssigned">$0.00</strong><em>Base anual</em></article><article class="kpi-card"><span class="kpi-icon blue">↗</span><small>Entradas</small><strong id="kpiEntries">$0.00</strong><em>Recursos agregados</em></article><article class="kpi-card"><span class="kpi-icon red">↘</span><small>Salidas</small><strong id="kpiOutputs">$0.00</strong><em>Ejercicio registrado</em></article><article class="kpi-card"><span class="kpi-icon teal">✓</span><small>Disponible</small><strong id="kpiAvailable">$0.00</strong><em>Saldo actual</em></article></div>
+<div class="quick-grid"><a href="?view=solicitudes" class="quick-card"><span>📝</span><div><b>Solicitudes pendientes</b><strong id="pendingRequests">0</strong></div></a><a href="?view=aclaraciones" class="quick-card"><span>💬</span><div><b>Aclaraciones abiertas</b><strong id="openClarifications">0</strong></div></a><a href="?view=movimientos" class="quick-card"><span>🔎</span><div><b>Consultar movimientos</b><small>Folios, personas y evidencias</small></div></a></div>
+<div class="dashboard-grid"><section class="panel"><div class="panel-head"><div><span class="eyebrow">COMPORTAMIENTO</span><h2>Movimiento mensual</h2></div><span class="legend"><i class="dot entry"></i>Entradas <i class="dot output"></i>Salidas</span></div><div id="monthlyChart" class="monthly-bars"></div></section><section class="panel"><div class="panel-head"><div><span class="eyebrow">DEPARTAMENTOS</span><h2>Disponibilidad</h2></div></div><div id="departmentSummary" class="department-summary"></div></section></div>

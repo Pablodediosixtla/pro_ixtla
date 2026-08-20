@@ -1,159 +1,148 @@
-# Presupuesto Ixtlahuacán — V2
+# Presupuesto Ixtlahuacán — V4 / DEP02
 
-Aplicación web PHP + MySQL para control presupuestal municipal. Mantiene la estructura del proyecto `pro_ixtla` (`css/`, `js/`, `img/`, `views/`, `db/conn/`, `db/web/`, `sql/` y `.github/workflows/`) y adopta el lenguaje visual de **Ixtla App** mediante sus logotipos, paleta institucional y recursos gráficos.
+Aplicación web PHP + MySQL para la administración del presupuesto municipal de Ixtlahuacán. La aplicación es autocontenida y usa exclusivamente el schema `ixtla01_dep02`; no depende del login ni de servicios publicados en `ixtla-app.com`.
 
-## Qué cambia en esta V2
+## Estado de esta versión
 
-- Login visual renovado con identidad de Ixtla App y composición fotográfica.
-- `AUTH_MODE=demo`: permite entrar sin consultar `empleado_cuenta`.
-- `DATA_MODE=demo`: dashboard, departamentos, sub-items, presupuestos, entradas, salidas, folios y bitácora funcionan con datos de demostración guardados en la sesión.
-- Servicios PHP viven dentro de **este mismo proyecto** (`db/web/...`), por lo que no es necesario llamar a servicios publicados en `ixtla-app.com`.
-- `AUTH_MODE=db` y `DATA_MODE=db` habilitan la conexión real a Azure MySQL usando variables de entorno.
-- Endpoint de diagnóstico: `db/web/system/health.php?check_db=1` (requiere sesión).
-- No se incluyen credenciales reales en `.env.example`.
+- Schema operativo: `ixtla01_dep02`
+- MySQL 8 / Azure Database for MySQL
+- PHP 8.x / Azure App Service `pro-ixtla`
+- Servicios propios en `db/web/`
+- Login real contra `usuario`
+- Roles y permisos con alcance de datos
+- Jerarquía de Director → Supervisor → Subordinado
+- Tesorería registra las salidas reales
+- Solicitudes previas al pago
+- Aclaraciones y seguimiento por movimiento
+- Evidencias PDF/JPG/PNG
+- Bitácora de acciones
+- Experiencia responsive y navegación rápida para móvil
 
-## 1. Modo revisión inmediato
+## Modelo de acceso
 
-La aplicación usa `demo` por defecto si no existen variables de entorno.
+| Rol | Alcance | Uso principal |
+|---|---|---|
+| ADMIN | GLOBAL | Configuración completa, catálogos, usuarios y operación |
+| PRESIDENTE | GLOBAL | Mismo alcance global, priorizando consulta desde móvil |
+| TESORERIA | GLOBAL | Presupuesto, solicitudes, entradas/salidas, aclaraciones y auditoría |
+| DIRECTOR | DEPARTAMENTO | Información y solicitudes de su departamento |
+| SUPERVISOR | JERARQUIA | Él y sus subordinados recursivos en su departamento |
+| SUBORDINADO | PROPIO | Su propia operación y solicitudes |
 
-Local:
+La seguridad no depende de ocultar botones. Los endpoints vuelven a validar permisos y alcance antes de consultar o modificar datos.
 
-```bash
-cp .env.example .env
-php -S localhost:8080
-```
+## Flujo de salida
 
-Abre:
+1. Un usuario del departamento genera una solicitud.
+2. La solicitud se autoriza o rechaza según permisos.
+3. Tesorería registra la salida financiera real.
+4. Se genera un folio `FOL-AAAA-NNNNNN`.
+5. Se registra quién solicitó, a quién se otorgó y quién registró el movimiento.
+6. La evidencia queda asociada al movimiento.
+7. Cualquier usuario con alcance puede levantar una aclaración.
+8. La bitácora conserva las operaciones sensibles.
 
-```text
-http://localhost:8080
-```
+## SQL
 
-En el login puedes usar **Entrar directamente a revisión**. No se valida ninguna tabla de usuarios y tampoco se requiere conexión a base de datos.
+El schema ya puede instalarse con:
 
-## 2. Modos disponibles
+1. `sql/00_create_schema.sql`
+2. `sql/01_security_catalogs.sql`
+3. `sql/02_budget_movements.sql`
+4. `sql/03_followups_audit.sql`
+5. `sql/04_views.sql`
+6. `sql/05_seed_demo.sql`
 
-### Revisión completa sin DB
+`sql/99_install_all.sql` contiene todo el instalador consolidado. Esta versión incorpora la corrección de la FK de `presupuesto_subitem` que evita el Error 1215.
+
+Después de instalar, ejecutar `sql/06_validate_install.sql` para revisar objetos, roles, usuarios y presupuesto demo.
+
+`sql/07_demo_credentials.sql` permite restablecer únicamente las cuentas demo durante pruebas.
+
+## Usuarios demo
+
+Las contraseñas demo se inicializan fuera del repositorio con `php scripts/set_demo_passwords.php`.
+
+- `admin.demo`
+- `presidente.demo`
+- `tesoreria.demo`
+- `cultura.director`
+- `cultura.supervisor`
+- `cultura.auxiliar`
+- `servicios.director`
+
+## Configuración
+
+La aplicación lee variables desde Azure App Service y, localmente, desde `.env`.
+
+Variables principales:
 
 ```env
-AUTH_MODE=demo
-DATA_MODE=demo
-```
+APP_ENV=production
+APP_URL=https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net
+APP_TIMEZONE=America/Mexico_City
+SESSION_NAME=PROIXTLA_SESSION
 
-Sirve para validar UX, navegación y flujo funcional completo.
-
-### Login temporal + datos reales
-
-```env
-AUTH_MODE=demo
-DATA_MODE=db
-```
-
-Permite entrar sin validar usuarios, pero todos los catálogos y movimientos se consultan contra MySQL.
-
-### Producción completa
-
-```env
-AUTH_MODE=db
-DATA_MODE=db
-```
-
-El login valida `empleado_cuenta`, `empleado`, `empleado_rol` y `rol`; el módulo usa las tablas presupuestales reales.
-
-## 3. Variables de Azure
-
-En **App Service > Environment variables / Application settings** configura, cuando quieras usar DB:
-
-```text
-AUTH_MODE=db
-DATA_MODE=db
 DB_HOST=...
 DB_PORT=3306
-DB_NAME=...
+DB_NAME=ixtla01_dep02
 DB_USER=...
 DB_PASS=...
 DB_SSL=true
 DB_SSL_CA=db/conn/DigiCertGlobalRootG2.crt.pem
-APP_URL=https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net
-APP_TIMEZONE=America/Mexico_City
+DB_CONNECT_TIMEOUT=8
 ```
 
-Para probar primero el backend real manteniendo el login de revisión usa:
+`.env` está en `.gitignore`; no debe publicarse en GitHub. Para Azure, las credenciales deben configurarse en **App Service → Variables de entorno**.
+
+## Servicios
+
+- `db/web/auth/` — login, logout y sesión
+- `db/web/departamentos/` — administración de departamentos
+- `db/web/usuarios/` — usuarios, roles y jerarquía
+- `db/web/roles/` — RBAC y permisos
+- `db/web/presupuestos/` — asignación y consulta de presupuesto
+- `db/web/subitems/` — categorías presupuestales
+- `db/web/solicitudes/` — solicitudes previas al pago
+- `db/web/movimientos/` — entradas, salidas, evidencia, cancelación y detalle
+- `db/web/aclaraciones/` — seguimiento tipo conversación
+- `db/web/bitacora/` — auditoría
+- `db/web/dashboard/` — KPIs
+- `db/web/system/health.php` — disponibilidad del App Service y conexión al schema
+- `db/web/system/schema-check.php` — validación de objetos para administradores
+
+## Prueba de salud
+
+Después del despliegue:
 
 ```text
-AUTH_MODE=demo
-DATA_MODE=db
+https://pro-ixtla-c7azh2cagpfvfede.mexicocentral-01.azurewebsites.net/db/web/system/health.php
 ```
 
-## 4. Servicios locales del proyecto
+Debe mostrar `database.reachable=true`, `active_schema=ixtla01_dep02` y `schema_ok=true`.
 
-```text
-db/web/auth/login.php
-db/web/auth/logout.php
-db/web/auth/me.php
+## Validación local
 
-db/web/dashboard/resumen.php
-
-db/web/departamentos/list.php
-db/web/departamentos/employees.php
-db/web/departamentos/save.php
-
-db/web/subitems/list.php
-db/web/subitems/save.php
-
-db/web/presupuestos/save.php
-
-db/web/movimientos/list.php
-db/web/movimientos/get.php
-db/web/movimientos/create.php
-db/web/movimientos/cancel.php
-db/web/movimientos/file.php
-
-db/web/system/health.php
+```bash
+./scripts/check_project.sh
 ```
 
-Todos se consumen con rutas relativas, por ejemplo:
+El script valida sintaxis PHP y, si Node está disponible, sintaxis JavaScript.
 
-```text
-db/web/auth/login.php
-```
+## GitHub / Azure
 
-por lo que navegador y servicio están en el mismo dominio de `pro-ixtla`.
-
-## 5. DDL
-
-Mantiene los scripts:
-
-1. `sql/00_precheck.sql`
-2. `sql/01_presupuesto_schema.sql`
-3. `sql/02_seed_catalogos.sql`
-4. `sql/03_bootstrap_permiso.sql`
-
-No ejecutes los scripts nuevamente si las tablas ya fueron creadas y contienen información que debas conservar sin antes revisar el DDL.
-
-## 6. GitHub / Azure
-
-El workflow incluido despliega `main` sobre la Web App:
-
-```text
-pro-ixtla
-```
-
-Requiere el Repository Secret:
+El workflow se encuentra en `.github/workflows/main_pro_ixtla.yml` y despliega al App Service `pro-ixtla` utilizando el secret:
 
 ```text
 AZURE_WEBAPP_PUBLISH_PROFILE
 ```
 
-## 7. Git
+## Inicialización segura de contraseñas demo
+
+Los SQL versionados no contienen contraseñas ni hashes. Para una instalación nueva, después de ejecutar el DDL/seed y con la conexión configurada en `.env`, ejecutar:
 
 ```bash
-git status
-git add .
-git commit -m "V2 modo demo y estilo Ixtla App"
-git push origin main
+php scripts/set_demo_passwords.php
 ```
 
-## Seguridad
-
-El proyecto nuevo no incluye usuario ni contraseña real de MySQL. Las credenciales deben mantenerse únicamente en `.env` local o en las Application Settings de Azure.
+El script solicita la contraseña de forma interactiva y genera el hash con `password_hash()` en tiempo de ejecución. Así, ningún hash o secreto queda versionado en Git.

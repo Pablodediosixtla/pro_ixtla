@@ -1,26 +1,38 @@
 <?php
-require_once __DIR__ . '/db/lib/bootstrap.php';
+require_once __DIR__.'/db/lib/bootstrap.php';
 start_app_session();
 
 if (!isset($_SESSION['user'])) {
-    $pageTitle = 'Iniciar sesión';
-    include __DIR__ . '/views/login.php';
+    $pageTitle='Iniciar sesión';
+    include __DIR__.'/views/login.php';
     exit;
 }
 
-$allowedViews = [
-    'dashboard',
-    'departamentos',
-    'departamento-detalle',
-    'subitems',
-    'movimientos',
-    'nuevo-movimiento',
-    'bitacora'
+$user = $_SESSION['user'];
+$allowed = [
+    'dashboard','departamentos','usuarios','roles','presupuestos','subitems',
+    'solicitudes','movimientos','nuevo-movimiento','aclaraciones','bitacora'
 ];
-
 $view = $_GET['view'] ?? 'dashboard';
-if (!in_array($view, $allowedViews, true)) {
-    $view = 'dashboard';
+if (!in_array($view, $allowed, true)) {
+    $view='dashboard';
 }
 
-include __DIR__ . '/views/layout.php';
+$viewPermissions = [
+    'departamentos'     => ['DEPARTAMENTOS_GESTIONAR'],
+    'usuarios'          => ['USUARIOS_GESTIONAR'],
+    'roles'             => ['ROLES_GESTIONAR'],
+    'presupuestos'      => ['PRESUPUESTO_VER'],
+    'subitems'          => ['SUBITEMS_GESTIONAR'],
+    'solicitudes'       => ['SOLICITUD_CREAR','SOLICITUD_APROBAR'],
+    'movimientos'       => ['MOVIMIENTO_VER'],
+    'nuevo-movimiento'  => ['MOVIMIENTO_ENTRADA_CREAR','MOVIMIENTO_SALIDA_CREAR'],
+    'aclaraciones'      => ['ACLARACION_CREAR','ACLARACION_GESTIONAR'],
+    'bitacora'          => ['BITACORA_VER'],
+];
+
+if (isset($viewPermissions[$view]) && !user_has_any_permission($user, $viewPermissions[$view])) {
+    $view='dashboard';
+}
+
+include __DIR__.'/views/layout.php';

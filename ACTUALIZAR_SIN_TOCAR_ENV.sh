@@ -5,35 +5,36 @@ SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
 TARGET_DIR="${1:-}"
 
 if [[ -z "$TARGET_DIR" ]]; then
-  echo "Uso: ./ACTUALIZAR_SIN_TOCAR_ENV.sh /ruta/a/tu/pro_ixtla"
+  echo "Uso: ./ACTUALIZAR_SIN_TOCAR_ENV.sh /ruta/a/pro_ixtla"
   exit 1
 fi
 
-TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
-
-if [[ ! -d "$TARGET_DIR/.git" ]]; then
-  echo "ERROR: $TARGET_DIR no parece ser el clon Git de pro_ixtla (.git no encontrado)."
-  exit 1
-fi
-
-ENV_BACKUP=""
+mkdir -p "$TARGET_DIR"
+BACKUP=""
 if [[ -f "$TARGET_DIR/.env" ]]; then
-  ENV_BACKUP="$(mktemp /tmp/pro_ixtla_env.XXXXXX)"
-  cp "$TARGET_DIR/.env" "$ENV_BACKUP"
-  echo "Respaldo temporal de .env creado."
+  BACKUP="$(mktemp)"
+  cp "$TARGET_DIR/.env" "$BACKUP"
 fi
 
-rsync -av \
-  --exclude='.git' \
+rsync -av --delete \
+  --exclude='.git/' \
   --exclude='.env' \
-  --exclude='ACTUALIZAR_SIN_TOCAR_ENV.sh' \
   --exclude='uploads/presupuesto/*' \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
-if [[ -n "$ENV_BACKUP" ]]; then
-  cp "$ENV_BACKUP" "$TARGET_DIR/.env"
-  rm -f "$ENV_BACKUP"
-  echo ".env restaurado sin cambios."
+if [[ -n "$BACKUP" ]]; then
+  cp "$BACKUP" "$TARGET_DIR/.env"
+  rm -f "$BACKUP"
+  # Conserva host/usuario/password y apunta al nuevo schema.
+  if grep -q '^DB_NAME=' "$TARGET_DIR/.env"; then
+    sed -i.bak 's/^DB_NAME=.*/DB_NAME=ixtla01_dep02/' "$TARGET_DIR/.env" && rm -f "$TARGET_DIR/.env.bak"
+  else
+    printf '\nDB_NAME=ixtla01_dep02\n' >> "$TARGET_DIR/.env"
+  fi
+  echo "Configuración .env conservada; DB_NAME actualizado a ixtla01_dep02."
+else
+  cp "$SOURCE_DIR/.env" "$TARGET_DIR/.env"
+  echo "No existía .env en destino; se colocó la configuración recuperada del proyecto."
 fi
 
-echo "Actualización aplicada. Revisa: git status"
+echo "Proyecto actualizado en: $TARGET_DIR"

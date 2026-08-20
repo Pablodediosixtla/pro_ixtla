@@ -1,17 +1,30 @@
 <?php
-require_once dirname(__DIR__, 2) . '/lib/bootstrap.php';
-require_method('GET');require_login();
-$checkDb=(string)($_GET['check_db']??'0')==='1';
+require_once dirname(__DIR__,2).'/lib/bootstrap.php';
+require_method('GET');
+
+$expectedSchema='ixtla01_dep02';
+$db=conectar();
 $data=[
- 'application'=>'Presupuesto Ixtlahuacán',
- 'php'=>PHP_VERSION,
- 'auth_mode'=>app_auth_mode(),
- 'data_mode'=>app_data_mode(),
- 'database'=>[
-   'configured'=>trim((string)env_value('DB_HOST',''))!=='' && trim((string)env_value('DB_USER',''))!=='' && trim((string)env_value('DB_NAME',''))!=='',
-   'checked'=>false,
-   'reachable'=>null,
- ]
+    'application'=>'Presupuesto Ixtlahuacán',
+    'version'=>trim((string)@file_get_contents(project_root().'/VERSION')) ?: 'unknown',
+    'status'=>'UP',
+    'database'=>[
+        'reachable'=>$db instanceof mysqli,
+        'expected_schema'=>$expectedSchema,
+        'active_schema'=>null,
+        'schema_ok'=>false,
+    ],
 ];
-if($checkDb){$data['database']['checked']=true;$con=conectar();$data['database']['reachable']=$con instanceof mysqli;if($con)$con->close();}
+
+if($db){
+    $r=$db->query('SELECT DATABASE() db');
+    if($r&&$row=$r->fetch_assoc()){
+        $data['database']['active_schema']=$row['db'];
+        $data['database']['schema_ok']=$row['db']===$expectedSchema;
+    }
+    $db->close();
+}else{
+    $data['status']='DEGRADED';
+}
+
 json_response(['ok'=>true,'data'=>$data]);

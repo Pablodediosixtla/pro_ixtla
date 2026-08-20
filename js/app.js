@@ -1,31 +1,16 @@
-window.Ixtla={
-  csrf:'',user:window.APP_USER||null,authMode:'',dataMode:'',
-  api:async function(url,options={}){
-    options.headers=options.headers||{};
-    if(options.body&&!(options.body instanceof FormData)&&typeof options.body!=='string'){
-      options.headers['Content-Type']='application/json';options.body=JSON.stringify(options.body);
-    }
-    if((options.method||'GET').toUpperCase()!=='GET'&&this.csrf)options.headers['X-CSRF-Token']=this.csrf;
-    const r=await fetch(url,options);const text=await r.text();let j;
-    try{j=JSON.parse(text);}catch{throw Object.assign(new Error(`El servicio devolvió una respuesta no JSON (HTTP ${r.status}).`),{status:r.status,raw:text.slice(0,240)});}
-    if(!r.ok||!j.ok)throw Object.assign(new Error(j.error||'Error de operación'),{response:j,status:r.status});
-    return j;
-  },
-  money:n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(n||0)),
-  date:d=>d?new Intl.DateTimeFormat('es-MX').format(new Date(d+'T12:00:00')):'',
-  toast:function(msg,error=false){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.toggle('error',error);t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),3200);},
-  isAdmin:function(){return (this.user?.budget_permissions||[]).some(p=>p.role==='ADMIN');},
-  openModal:id=>document.getElementById(id)?.classList.remove('hidden'),
-  closeModal:el=>el.closest('.modal')?.classList.add('hidden')
+const App={
+  user:window.PROIXTLA_USER||{},csrf:window.PROIXTLA_CSRF||'',
+  async api(url,opts={}){const o={...opts};o.headers={...(o.headers||{})};if(o.body&&!(o.body instanceof FormData)){o.headers['Content-Type']='application/json';if(typeof o.body!=='string')o.body=JSON.stringify(o.body);}if((o.method||'GET').toUpperCase()!=='GET')o.headers['X-CSRF-Token']=this.csrf;const r=await fetch(url,o);const text=await r.text();let j;try{j=JSON.parse(text)}catch{throw new Error(`El servicio respondió contenido no válido (HTTP ${r.status})`)}if(!r.ok||!j.ok)throw new Error(j.error||'Error de servicio');return j.data},
+  money(v){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(v||0))},
+  date(v){if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})},
+  toast(msg,type='ok'){const root=document.getElementById('toastRoot');if(!root)return;const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;root.appendChild(el);setTimeout(()=>el.remove(),3600)},
+  years(select){if(!select)return;const y=new Date().getFullYear();select.innerHTML='';for(let i=y+1;i>=y-4;i--){const o=document.createElement('option');o.value=i;o.textContent=i;if(i===y)o.selected=true;select.appendChild(o)}},
+  openModal(id){document.getElementById(id)?.classList.remove('hidden');document.getElementById('globalBackdrop')?.classList.remove('hidden')},
+  closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));document.getElementById('globalBackdrop')?.classList.add('hidden')},
+  has(p){return (this.user.permissions||[]).includes(p)},
+  debounce(fn,ms=280){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}}
 };
-
-document.addEventListener('DOMContentLoaded',async()=>{
-  try{const me=await Ixtla.api('db/web/auth/me.php');Ixtla.csrf=me.data.csrf;Ixtla.user=me.data.user;Ixtla.authMode=me.data.auth_mode;Ixtla.dataMode=me.data.data_mode;}
-  catch{location.href='index.php';return;}
-  document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!Ixtla.isAdmin()));
-  document.querySelectorAll('.non-admin-only').forEach(el=>el.classList.toggle('hidden',Ixtla.isAdmin()));
-  document.getElementById('logoutBtn')?.addEventListener('click',async()=>{try{await Ixtla.api('db/web/auth/logout.php',{method:'POST'});}finally{location.href='index.php';}});
-  document.getElementById('menuBtn')?.addEventListener('click',()=>document.getElementById('sidebar')?.classList.toggle('open'));
-  document.addEventListener('click',e=>{const close=e.target.closest('[data-close-modal]');if(close)Ixtla.closeModal(close);if(e.target.classList.contains('modal'))e.target.classList.add('hidden');});
-  document.dispatchEvent(new CustomEvent('ixtla:ready'));
-});
+window.App=App;
+document.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',()=>App.closeModals()));document.getElementById('globalBackdrop')?.addEventListener('click',()=>App.closeModals());
+const sidebar=document.getElementById('sidebar');document.getElementById('openSidebar')?.addEventListener('click',()=>sidebar?.classList.add('open'));document.getElementById('closeSidebar')?.addEventListener('click',()=>sidebar?.classList.remove('open'));
+document.getElementById('logoutBtn')?.addEventListener('click',async()=>{try{await App.api('db/web/auth/logout.php',{method:'POST',body:{}})}catch{}location.href='index.php'});

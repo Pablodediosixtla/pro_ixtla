@@ -1,0 +1,5 @@
+<?php
+require_once dirname(__DIR__,2).'/lib/bootstrap.php';require_method('GET');require_permission('USUARIOS_GESTIONAR','ROLES_GESTIONAR');$db=conectar();if(!$db)json_response(['ok'=>false,'error'=>'Sin conexión a base de datos'],503);
+$roles=[];$rs=$db->query("SELECT * FROM rol ORDER BY es_sistema DESC,nombre");while($r=$rs->fetch_assoc()){$r['rol_id']=(int)$r['rol_id'];$r['es_sistema']=(int)$r['es_sistema'];$r['permissions']=[];$roles[$r['rol_id']]=$r;}
+$rs=$db->query("SELECT rp.rol_id,p.codigo,p.nombre,p.modulo FROM rol_permiso rp JOIN permiso p ON p.permiso_id=rp.permiso_id ORDER BY p.modulo,p.nombre");while($r=$rs->fetch_assoc()){if(isset($roles[(int)$r['rol_id']]))$roles[(int)$r['rol_id']]['permissions'][]=['code'=>$r['codigo'],'name'=>$r['nombre'],'module'=>$r['modulo']];}
+$perms=[];$rs=$db->query("SELECT permiso_id,codigo,nombre,descripcion,modulo FROM permiso ORDER BY modulo,nombre");while($r=$rs->fetch_assoc()){$r['permiso_id']=(int)$r['permiso_id'];$perms[]=$r;}$db->close();json_response(['ok'=>true,'data'=>['roles'=>array_values($roles),'permissions'=>$perms]]);
