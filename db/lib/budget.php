@@ -9,6 +9,62 @@ function money_value(mixed $value): float {
 
 function current_year(): int { return (int)date('Y'); }
 
+/**
+ * Totalizadores financieros de un único departamento y ejercicio.
+ * Se calculan por subconsultas independientes para evitar duplicaciones por
+ * JOIN y para garantizar que cada KPI use exactamente la misma frontera.
+ */
+function department_financial_summary(mysqli $db, int $departmentId, int $year): array {
+    $sql = "SELECT
+        COALESCE((
+            SELECT pd.presupuesto_asignado
+            FROM presupuesto_departamento pd
+            WHERE pd.departamento_id=? AND pd.ejercicio=? AND pd.estatus='ACTIVO'
+            ORDER BY pd.presupuesto_departamento_id DESC
+            LIMIT 1
+        ),0) asignado,
+        COALESCE((
+            SELECT SUM(pm.monto)
+            FROM presupuesto_movimiento pm
+            WHERE pm.departamento_id=? AND pm.ejercicio=? AND pm.tipo='ENTRADA' AND pm.estatus='REGISTRADO'
+        ),0) entradas,
+        COALESCE((
+            SELECT SUM(pm.monto)
+            FROM presupuesto_movimiento pm
+            WHERE pm.departamento_id=? AND pm.ejercicio=? AND pm.tipo='SALIDA' AND pm.estatus='REGISTRADO'
+        ),0) salidas";
+    $st = $db->prepare($sql);
+    if (!$st) {
+        throw new RuntimeException('No se pudieron preparar los totalizadores financieros');
+    }
+    $st->bind_param(
+        'iiiiii',
+        $departmentId, $year,
+        $departmentId, $year,
+        $departmentId, $year
+    );
+    if (!$st->execute()) {
+        $message = $st->error ?: 'Error al calcular los totalizadores financieros';
+        $st->close();
+        throw new RuntimeException($message);
+    }
+    $row = $st->get_result()->fetch_assoc() ?: [];
+    $st->close();
+
+    $assigned = (float)($row['asignado'] ?? 0);
+    $entries = (float)($row['entradas'] ?? 0);
+    $outputs = (float)($row['salidas'] ?? 0);
+    $available = $assigned + $entries - $outputs;
+
+    return [
+        'asignado' => $assigned,
+        'entradas' => $entries,
+        'salidas' => $outputs,
+        'disponible' => $available,
+        'ejercido_pct' => $assigned > 0 ? round(($outputs / $assigned) * 100, 1) : 0.0,
+    ];
+}
+
 function next_folio(mysqli $db, string $type, int $year): string {
     $type=strtoupper($type);
     $prefix=match($type){'SOLICITUD'=>'SOL','ACLARACION'=>'ACL',default=>'FOL'};
@@ -26,16 +82,13 @@ function next_folio(mysqli $db, string $type, int $year): string {
 }
 
 function department_balance(mysqli $db,int $departmentId,int $year):array{
-    $sql="SELECT COALESCE(pd.presupuesto_asignado,0) asignado,
-          COALESCE(SUM(CASE WHEN pm.tipo='ENTRADA' AND pm.estatus='REGISTRADO' THEN pm.monto ELSE 0 END),0) entradas,
-          COALESCE(SUM(CASE WHEN pm.tipo='SALIDA' AND pm.estatus='REGISTRADO' THEN pm.monto ELSE 0 END),0) salidas
-          FROM departamento d
-          LEFT JOIN presupuesto_departamento pd ON pd.departamento_id=d.departamento_id AND pd.ejercicio=? AND pd.estatus='ACTIVO'
-          LEFT JOIN presupuesto_movimiento pm ON pm.departamento_id=d.departamento_id AND pm.ejercicio=?
-          WHERE d.departamento_id=? GROUP BY d.departamento_id,pd.presupuesto_asignado";
-    $st=$db->prepare($sql);$st->bind_param('iii',$year,$year,$departmentId);$st->execute();$r=$st->get_result()->fetch_assoc();$st->close();
-    $a=(float)($r['asignado']??0);$e=(float)($r['entradas']??0);$s=(float)($r['salidas']??0);
-    return ['asignado'=>$a,'entradas'=>$e,'salidas'=>$s,'disponible'=>$a+$e-$s];
+    $summary = department_financial_summary($db, $departmentId, $year);
+    return [
+        'asignado'=>$summary['asignado'],
+        'entradas'=>$summary['entradas'],
+        'salidas'=>$summary['salidas'],
+        'disponible'=>$summary['disponible'],
+    ];
 }
 
 function save_evidence_file(array $file,string $folio):?array{

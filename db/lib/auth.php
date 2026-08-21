@@ -47,10 +47,46 @@ function user_has_any_role(array $user, array $roles): bool {
     return (bool) array_intersect(user_role_codes($user), $roles);
 }
 
-function user_is_global(array $user): bool {
-    foreach ($user['assignments'] ?? [] as $a) {
-        if (($a['scope'] ?? '') === 'GLOBAL') return true;
+/**
+ * Asignación efectiva del usuario.
+ *
+ * La aplicación administra una sola asignación principal activa por usuario.
+ * Si por datos históricos quedara otra asignación ACTIVA, la principal es la
+ * que gobierna el alcance de navegación y de información.
+ */
+function user_primary_assignment(array $user): ?array {
+    $assignments = $user['assignments'] ?? [];
+    if (!$assignments) return null;
+
+    foreach ($assignments as $assignment) {
+        if (($assignment['primary'] ?? false) === true) return $assignment;
     }
+
+    return $assignments[0] ?? null;
+}
+
+function user_is_global(array $user): bool {
+    $primary = user_primary_assignment($user);
+
+    if ($primary !== null) {
+        $roleCode = strtoupper((string)($primary['role_code'] ?? ''));
+        $scope = strtoupper((string)($primary['scope'] ?? ''));
+
+        // Roles municipales con alcance global explícito.
+        if (in_array($roleCode, ['ADMIN','PRESIDENTE','TESORERIA'], true)) {
+            return true;
+        }
+
+        // Director, Supervisor y Subordinado nunca heredan accidentalmente
+        // alcance GLOBAL de una asignación histórica secundaria.
+        if (in_array($roleCode, ['DIRECTOR','SUPERVISOR','SUBORDINADO'], true)) {
+            return false;
+        }
+
+        // Roles personalizados: respeta el alcance de su asignación principal.
+        return $scope === 'GLOBAL';
+    }
+
     return false;
 }
 
@@ -59,20 +95,9 @@ function user_is_global(array $user): bool {
  * Se usa para perfiles subordinados y para cualquier rol personalizado equivalente.
  */
 function user_is_own_scope_only(array $user): bool {
-    $assignments = $user['assignments'] ?? [];
-    if (!$assignments) return false;
-    $hasOwn = false;
-    foreach ($assignments as $a) {
-        $scope = strtoupper((string)($a['scope'] ?? ''));
-        if ($scope === 'PROPIO') {
-            $hasOwn = true;
-            continue;
-        }
-        if (in_array($scope, ['JERARQUIA','DEPARTAMENTO','GLOBAL'], true)) {
-            return false;
-        }
-    }
-    return $hasOwn;
+    $primary = user_primary_assignment($user);
+    if ($primary === null) return false;
+    return strtoupper((string)($primary['scope'] ?? '')) === 'PROPIO';
 }
 
 /**
@@ -84,9 +109,30 @@ function user_can_view_department_financials(array $user): bool {
 }
 
 function user_department_ids(array $user): array {
-    $ids=[];
+    $primary = user_primary_assignment($user);
+
+    // Para perfiles departamentales, el departamento principal es la frontera
+    // de seguridad. Esto evita sumar información de otras áreas por registros
+    // históricos que hayan quedado activos.
+    if ($primary !== null) {
+        $scope = strtoupper((string)($primary['scope'] ?? ''));
+        $departmentId = $primary['department_id'] ?? null;
+
+        if ($scope !== 'GLOBAL' && $departmentId !== null) {
+            return [(int)$departmentId];
+        }
+
+        if ($scope === 'GLOBAL') {
+            return [];
+        }
+    }
+
+    // Fallback defensivo para cuentas antiguas sin asignación marcada principal.
+    $ids = [];
     foreach ($user['assignments'] ?? [] as $a) {
-        if (($a['department_id'] ?? null) !== null) $ids[]=(int)$a['department_id'];
+        $scope = strtoupper((string)($a['scope'] ?? ''));
+        if ($scope === 'GLOBAL') continue;
+        if (($a['department_id'] ?? null) !== null) $ids[] = (int)$a['department_id'];
     }
     return array_values(array_unique($ids));
 }

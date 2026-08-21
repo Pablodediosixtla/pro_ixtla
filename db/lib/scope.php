@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 function visible_department_ids(mysqli $db, array $user): array {
-    if(user_is_global($user)){
-        $ids=[];$rs=$db->query("SELECT departamento_id FROM departamento WHERE estatus='ACTIVO' ORDER BY departamento_id");
-        if($rs) while($r=$rs->fetch_assoc()) $ids[]=(int)$r['departamento_id'];
+    if (user_is_global($user)) {
+        $ids = [];
+        $rs = $db->query("SELECT departamento_id FROM departamento WHERE estatus='ACTIVO' ORDER BY departamento_id");
+        if ($rs) while ($r = $rs->fetch_assoc()) $ids[] = (int)$r['departamento_id'];
         return $ids;
     }
+
+    // Director, Supervisor, Subordinado y roles personalizados no globales
+    // quedan limitados al departamento de su asignación principal.
     return user_department_ids($user);
 }
 

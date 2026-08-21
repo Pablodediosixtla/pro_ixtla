@@ -24,6 +24,7 @@ if(!$ids){
         'pending_requests'=>0,
         'open_clarifications'=>0,
         'own_scope_only'=>$ownOnly,
+        'scope_department_ids'=>$ids,
     ]]);
 }
 
@@ -32,18 +33,34 @@ $idList=implode(',',array_map('intval',$ids));
 // Los totalizadores y la disponibilidad por departamento no se calculan ni se
 // exponen para alcance PROPIO. Esto evita filtrar información agregada del área.
 if(!$ownOnly){
-    $sql="SELECT d.departamento_id,d.codigo,d.nombre,d.color_hex,COALESCE(pd.presupuesto_asignado,0) asignado,
-    COALESCE(SUM(CASE WHEN pm.tipo='ENTRADA' AND pm.estatus='REGISTRADO' THEN pm.monto ELSE 0 END),0) entradas,
-    COALESCE(SUM(CASE WHEN pm.tipo='SALIDA' AND pm.estatus='REGISTRADO' THEN pm.monto ELSE 0 END),0) salidas
-    FROM departamento d LEFT JOIN presupuesto_departamento pd ON pd.departamento_id=d.departamento_id AND pd.ejercicio=$year AND pd.estatus='ACTIVO'
-    LEFT JOIN presupuesto_movimiento pm ON pm.departamento_id=d.departamento_id AND pm.ejercicio=$year
-    WHERE d.departamento_id IN ($idList) AND d.estatus='ACTIVO'
-    GROUP BY d.departamento_id,d.codigo,d.nombre,d.color_hex,pd.presupuesto_asignado ORDER BY d.nombre";
+    // Los KPIs se calculan exclusivamente con los departamentos devueltos por
+    // visible_department_ids(). Para Director/Supervisor esto equivale al
+    // departamento principal de su sesión; nunca al municipio completo.
+    $sql="SELECT d.departamento_id,d.codigo,d.nombre,d.color_hex
+          FROM departamento d
+          WHERE d.departamento_id IN ($idList) AND d.estatus='ACTIVO'
+          ORDER BY d.nombre";
     $rs=$db->query($sql);
     if($rs) while($r=$rs->fetch_assoc()){
-        $a=(float)$r['asignado'];$e=(float)$r['entradas'];$s=(float)$r['salidas'];$dis=$a+$e-$s;
-        $deps[]=['departamento_id'=>(int)$r['departamento_id'],'codigo'=>$r['codigo'],'nombre'=>$r['nombre'],'color_hex'=>$r['color_hex'],'asignado'=>$a,'entradas'=>$e,'salidas'=>$s,'disponible'=>$dis,'ejercido_pct'=>$a>0?round(($s/$a)*100,1):0];
-        $tot['asignado']+=$a;$tot['entradas']+=$e;$tot['salidas']+=$s;$tot['disponible']+=$dis;
+        $departmentId=(int)$r['departamento_id'];
+        $financial=department_financial_summary($db,$departmentId,$year);
+
+        $deps[]=[
+            'departamento_id'=>$departmentId,
+            'codigo'=>$r['codigo'],
+            'nombre'=>$r['nombre'],
+            'color_hex'=>$r['color_hex'],
+            'asignado'=>$financial['asignado'],
+            'entradas'=>$financial['entradas'],
+            'salidas'=>$financial['salidas'],
+            'disponible'=>$financial['disponible'],
+            'ejercido_pct'=>$financial['ejercido_pct'],
+        ];
+
+        $tot['asignado'] += $financial['asignado'];
+        $tot['entradas'] += $financial['entradas'];
+        $tot['salidas'] += $financial['salidas'];
+        $tot['disponible'] += $financial['disponible'];
     }
     $tot['ejercido_pct']=$tot['asignado']>0?round(($tot['salidas']/$tot['asignado'])*100,1):0.0;
 }
@@ -80,4 +97,5 @@ json_response(['ok'=>true,'data'=>[
     'pending_requests'=>$pending,
     'open_clarifications'=>$open,
     'own_scope_only'=>$ownOnly,
+    'scope_department_ids'=>$ids,
 ]]);
