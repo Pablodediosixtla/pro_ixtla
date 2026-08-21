@@ -53,6 +53,13 @@
   async function loadSubitems(){
     const dep=depForm.value;
     if(!dep){subitem.innerHTML='<option value="">Sin sub-item</option>';return}
+
+    if(App.catalogs?.loaded){
+      const items=App.catalogSubitems(dep,'ENTRADA');
+      subitem.innerHTML='<option value="">Sin sub-item</option>'+items.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
+      return;
+    }
+
     try{
       const items=await App.api('api.php?route=subitems/list&tipo=ENTRADA&departamento_id='+encodeURIComponent(dep));
       subitem.innerHTML='<option value="">Sin sub-item</option>'+items.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
@@ -61,7 +68,8 @@
 
   async function boot(){
     try{
-      const deps=await App.api('api.php?route=departamentos/list');
+      let deps=App.catalogDepartments();
+      if(!deps.length)deps=await App.api('api.php?route=departamentos/list');
       const options=deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');
       depFilter.innerHTML='<option value="">Todos</option>'+options;
       depForm.innerHTML='<option value="">Seleccionar</option>'+options;

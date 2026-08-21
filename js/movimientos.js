@@ -111,7 +111,13 @@
 
    async function boot(){
      try{
-       const [deps,b,rs]=await Promise.all([App.api('api.php?route=departamentos/list'),App.api('api.php?route=presupuestos/list&year='+year),App.api('api.php?route=solicitudes/list&year='+year+'&estatus=AUTORIZADA')]);
+       const localDeps=App.catalogDepartments();
+       const [b,rs,depsFallback]=await Promise.all([
+         App.api('api.php?route=presupuestos/list&year='+year),
+         App.api('api.php?route=solicitudes/list&year='+year+'&estatus=AUTORIZADA'),
+         (!App.catalogs?.loaded||!localDeps.length)?App.api('api.php?route=departamentos/list'):Promise.resolve([])
+       ]);
+       const deps=localDeps.length?localDeps:depsFallback;
        budgets=b;requests=rs;
        dep.innerHTML='<option value="">Seleccionar</option>'+deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');
        req.innerHTML='<option value="">Movimiento directo</option>'+requests.map(r=>`<option value="${r.solicitud_id}">${App.escape(r.folio)} · ${App.escape(r.departamento)} · ${App.money(r.monto_solicitado)}</option>`).join('');
@@ -132,11 +138,24 @@
        return;
      }
      const movementType=(form.tipo?.value||'SALIDA').toUpperCase();
+
+     // Los catálogos críticos se cargan junto con la vista desde PHP. Así el
+     // cambio de departamento no depende de una segunda llamada HTTP en Azure.
+     if(App.catalogs?.loaded){
+       const subs=App.catalogSubitems(id,movementType);
+       const users=App.catalogUsers(id);
+       sub.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
+       renderDepartmentUsers(users);
+       if(!users.length)App.toast('No hay usuarios activos asignados a este departamento','warning');
+       return;
+     }
+
+     // Fallback defensivo para instalaciones antiguas donde el catálogo no se
+     // pudiera precargar durante el render.
      const [subsResult,usersResult]=await Promise.allSettled([
        App.api('api.php?route=subitems/list&tipo='+encodeURIComponent(movementType)+'&departamento_id='+encodeURIComponent(id)),
-       App.api('api.php?route=departamentos/list&usuarios=1&departamento_id='+encodeURIComponent(id))
+       App.api('api.php?route=usuarios/options&departamento_id='+encodeURIComponent(id))
      ]);
-
      if(subsResult.status==='fulfilled'){
        const subs=subsResult.value||[];
        sub.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
@@ -144,7 +163,6 @@
        sub.innerHTML='<option value="">Sin sub-item</option>';
        App.toast('No se pudieron cargar los sub-items: '+subsResult.reason.message,'error');
      }
-
      if(usersResult.status==='fulfilled'){
        const users=usersResult.value||[];
        renderDepartmentUsers(users);

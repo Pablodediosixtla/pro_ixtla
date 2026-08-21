@@ -70,4 +70,5 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/scope.php';
 require_once __DIR__ . '/audit.php';
 require_once __DIR__ . '/budget.php';
+require_once __DIR__ . '/catalogs.php';
 require_once __DIR__ . '/user_management.php';

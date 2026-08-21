@@ -1,10 +1,14 @@
 const App={
   user:window.PROIXTLA_USER||{},
   csrf:window.PROIXTLA_CSRF||'',
+  catalogs:window.PROIXTLA_CATALOGS||{loaded:false,departments:[],subitems:[],usersByDepartment:{}},
+  catalogDepartments(){return Array.isArray(this.catalogs?.departments)?this.catalogs.departments:[]},
+  catalogSubitems(departmentId,type=''){const dep=Number(departmentId||0),wanted=String(type||'').toUpperCase();return (Array.isArray(this.catalogs?.subitems)?this.catalogs.subitems:[]).filter(s=>(!wanted||String(s.tipo||'').toUpperCase()===wanted)&&(s.departamento_id===null||Number(s.departamento_id)===dep))},
+  catalogUsers(departmentId){const map=this.catalogs?.usersByDepartment||{};const rows=map[String(departmentId)]||map[Number(departmentId)]||[];return Array.isArray(rows)?rows:[]},
   async api(url,opts={}){
     const firstQ=url.indexOf('?');
     if(firstQ>=0){const secondQ=url.indexOf('?',firstQ+1);if(secondQ>=0)url=url.slice(0,secondQ)+'&'+url.slice(secondQ+1)}
-    const o={...opts};o.headers={...(o.headers||{})};
+    const o={...opts};o.headers={...(o.headers||{})};if((o.method||'GET').toUpperCase()==='GET'&&o.cache===undefined)o.cache='no-store';
     if(o.body&&!(o.body instanceof FormData)){o.headers['Content-Type']='application/json';if(typeof o.body!=='string')o.body=JSON.stringify(o.body)}
     if((o.method||'GET').toUpperCase()!=='GET')o.headers['X-CSRF-Token']=this.csrf;
     const r=await fetch(url,o),text=await r.text();let j;

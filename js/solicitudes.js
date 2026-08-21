@@ -38,7 +38,8 @@
 
   async function boot(){
     try{
-      deps=await App.api('api.php?route=departamentos/list');
+      deps=App.catalogDepartments();
+      if(!deps.length)deps=await App.api('api.php?route=departamentos/list');
       const opts=deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');
       depFilter.innerHTML='<option value="">Todos los departamentos</option>'+opts;
       depForm.innerHTML='<option value="">Seleccionar</option>'+opts;
@@ -58,9 +59,22 @@
 
   async function loadSubUsers(){
     const d=depForm.value;
-    if(!d)return;
+    if(!d){
+      subSel.innerHTML='<option value="">Sin sub-item</option>';
+      benefSel.innerHTML='<option value="">Persona externa / sin usuario</option>';
+      return;
+    }
+
+    if(App.catalogs?.loaded){
+      const subs=App.catalogSubitems(d,'SALIDA');
+      const users=App.catalogUsers(d);
+      subSel.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
+      benefSel.innerHTML='<option value="">Persona externa / sin usuario</option>'+users.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}</option>`).join('');
+      return;
+    }
+
     try{
-      const [subs,users]=await Promise.all([App.api('api.php?route=subitems/list&tipo=SALIDA&departamento_id='+d),App.api('api.php?route=departamentos/list&usuarios=1&departamento_id='+encodeURIComponent(d))]);
+      const [subs,users]=await Promise.all([App.api('api.php?route=subitems/list&tipo=SALIDA&departamento_id='+encodeURIComponent(d)),App.api('api.php?route=usuarios/options&departamento_id='+encodeURIComponent(d))]);
       subSel.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
       benefSel.innerHTML='<option value="">Persona externa / sin usuario</option>'+users.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}</option>`).join('');
     }catch(e){App.toast(e.message,'error')}
