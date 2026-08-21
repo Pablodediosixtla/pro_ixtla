@@ -20,12 +20,27 @@ function scope_rank(string $scope): int {
 }
 
 function highest_scope_for_department(array $user, int $departmentId): string {
+    // El alcance efectivo siempre parte de la asignación principal activa.
+    // Evita que una asignación histórica secundaria con alcance GLOBAL amplíe
+    // accidentalmente la visibilidad de un Director/Supervisor/Subordinado.
+    if (user_is_global($user)) return 'GLOBAL';
+
+    $primary = user_primary_assignment($user);
+    if ($primary !== null) {
+        $primaryDepartment = (int)($primary['department_id'] ?? 0);
+        $primaryScope = strtoupper((string)($primary['scope'] ?? ''));
+        if ($primaryDepartment === $departmentId) return $primaryScope;
+        return '';
+    }
+
+    // Fallback defensivo para cuentas antiguas sin asignación principal.
     $best='';$rank=0;
     foreach($user['assignments']??[] as $a){
-        if(($a['scope']??'')==='GLOBAL') return 'GLOBAL';
+        $scope = strtoupper((string)($a['scope']??''));
+        if($scope==='GLOBAL') continue;
         if((int)($a['department_id']??0)!==$departmentId) continue;
-        $r=scope_rank((string)$a['scope']);
-        if($r>$rank){$rank=$r;$best=(string)$a['scope'];}
+        $r=scope_rank($scope);
+        if($r>$rank){$rank=$r;$best=$scope;}
     }
     return $best;
 }
@@ -51,23 +66,15 @@ function movement_is_visible(mysqli $db, array $user, array $movement): bool {
     if(user_is_global($user)) return true;
     $departmentId=(int)($movement['departamento_id']??0);
     $scope=highest_scope_for_department($user,$departmentId);
-    if($scope==='DEPARTAMENTO') return true;
+    // Director (DEPARTAMENTO) y Supervisor (JERARQUIA) tienen visión
+    // operativa completa de su departamento. Esto incluye movimientos creados
+    // por Admin, Presidencia o Tesorería siempre que pertenezcan al mismo depto.
+    // La jerarquía se conserva para estructura organizacional, pero no recorta
+    // la información financiera departamental del Supervisor.
+    if(in_array($scope,['DEPARTAMENTO','JERARQUIA'],true)) return true;
 
     $uid=(int)$user['user_id'];
     $type=strtoupper((string)($movement['tipo']??''));
-
-    if($scope==='JERARQUIA'){
-        // Supervisores sí pueden consultar las entradas de dinero de su departamento.
-        if($type==='ENTRADA') return true;
-
-        // Para salidas, conservan el alcance de su jerarquía.
-        $ids=hierarchy_user_ids($db,$uid,$departmentId);
-        foreach(['solicitado_por_usuario_id','otorgado_a_usuario_id'] as $field){
-            $id=(int)($movement[$field]??0);
-            if($id>0 && in_array($id,$ids,true)) return true;
-        }
-        return false;
-    }
 
     if($scope==='PROPIO'){
         // Un subordinado solo ve salidas que él mismo solicitó. No ve entradas
@@ -81,13 +88,10 @@ function request_is_visible(mysqli $db, array $user, array $request): bool {
     if(user_is_global($user)) return true;
     $departmentId=(int)($request['departamento_id']??0);
     $scope=highest_scope_for_department($user,$departmentId);
-    if($scope==='DEPARTAMENTO') return true;
+    // Director y Supervisor ven todas las solicitudes de su departamento.
+    // El subordinado mantiene alcance estrictamente propio.
+    if(in_array($scope,['DEPARTAMENTO','JERARQUIA'],true)) return true;
     $uid=(int)$user['user_id'];
-    if($scope==='JERARQUIA'){
-        $ids=hierarchy_user_ids($db,$uid,$departmentId);
-        return in_array((int)($request['solicitado_por_usuario_id']??0),$ids,true)
-            || in_array((int)($request['otorgado_a_usuario_id']??0),$ids,true);
-    }
     if($scope==='PROPIO'){
         // El subordinado ve exclusivamente las solicitudes que él originó.
         return (int)($request['solicitado_por_usuario_id']??0)===$uid;
