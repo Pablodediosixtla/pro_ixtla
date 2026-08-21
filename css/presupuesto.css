@@ -674,3 +674,65 @@
   .expandable-summary{grid-template-columns:36px minmax(0,1fr) auto;gap:7px;padding:9px}.expandable-icon{width:36px;height:36px}.expandable-copy strong{font-size:.65rem}.expandable-copy>span{font-size:.56rem}.expandable-meta>strong{font-size:.61rem}.expandable-detail{padding-left:52px;padding-right:9px}.expandable-detail-grid{grid-template-columns:1fr}
   .request-step small{display:none}.request-step{min-height:54px}
 }
+
+
+/* ================================================================
+   V4.9 · Ejercido en Inicio + resumen departamental compacto +
+          sub-items expandibles
+   ================================================================ */
+.kpi-grid-five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.kpi-card:nth-child(5){--kpi-accent:var(--ix-gold)}
+.kpi-icon.gold{background:#faf3e6;color:#9a713c;border-color:#eadfc9}
+.kpi-card-exercised em b{color:#8b6b42;font-weight:950}
+.kpi-mobile-percent{display:none}
+
+/* El porcentaje ya vive en el encabezado del departamento. */
+.department-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+/* Sub-items: misma interacción compacta que movimientos/solicitudes. */
+.subitem-module-panel>.panel-head p{margin:4px 0 0;font-size:.61rem}
+.subitem-expandable-meta{grid-template-columns:auto auto 22px}
+.subitem-expandable-meta .badge{white-space:nowrap}
+.subitem-expandable-card .expandable-copy small{max-width:620px}
+
+@media(max-width:1100px) and (min-width:701px){
+  .kpi-grid-five{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi-card-exercised{grid-column:span 2}
+}
+
+@media(max-width:700px){
+  .kpi-grid-five{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi-card-exercised{
+    grid-column:1/-1;
+    min-height:84px;
+    grid-template-columns:36px minmax(0,1fr) auto;
+    grid-template-areas:"icon label percent" "icon value percent";
+    grid-template-rows:auto auto;
+    align-items:center;
+  }
+  .kpi-card-exercised em{display:none}
+  .kpi-card-exercised .kpi-mobile-percent{
+    display:inline-flex;
+    grid-area:percent;
+    align-items:center;
+    justify-content:center;
+    min-width:62px;
+    padding:7px 9px;
+    border-radius:999px;
+    background:#faf3e6;
+    color:#8b6b42;
+    font-size:.68rem;
+    font-weight:950;
+    white-space:nowrap;
+  }
+  .department-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .subitem-module-panel>.panel-head{align-items:flex-start}
+  .subitem-expandable-meta{grid-template-columns:auto 20px}
+  .subitem-expandable-meta>span:nth-child(2){display:none}
+  .subitem-expandable-card .expandable-copy small{max-width:100%}
+}
+
+@media(max-width:390px){
+  .kpi-card-exercised{grid-template-columns:32px minmax(0,1fr) auto;column-gap:7px}
+  .kpi-card-exercised .kpi-mobile-percent{min-width:56px;padding:6px 7px;font-size:.62rem}
+}

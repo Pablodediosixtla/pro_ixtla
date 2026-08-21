@@ -202,3 +202,11 @@ La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.p
 
 ## V4.8 - Sub-items por tipo de movimiento
 Los sub-items se clasifican como `ENTRADA` o `SALIDA`. Pagos solo consume sub-items de entrada; Solicitudes y salidas solo consumen sub-items de salida. Para una base existente, ejecutar una sola vez `sql/09_v48_subitems_entrada_salida.sql`.
+
+
+## V4.9.0
+
+- Inicio agrega totalizador **Ejercido** con monto y porcentaje sobre el presupuesto asignado.
+- Resumen de departamento elimina el totalizador redundante **% ejercido**; el porcentaje permanece en el encabezado del departamento.
+- Administración de **Sub-items** cambia de tabla a registros compactos expandibles/colapsables, conservando edición y distinción ENTRADA/SALIDA.
+- No requiere cambios DDL respecto de V4.8.

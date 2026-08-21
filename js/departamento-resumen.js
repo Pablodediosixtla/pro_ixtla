@@ -82,7 +82,6 @@
       document.getElementById('departmentEntries').textContent=App.money(t.entradas);
       document.getElementById('departmentAvailable').textContent=App.money(t.disponible);
       document.getElementById('departmentSpent').textContent=App.money(t.salidas);
-      document.getElementById('departmentPercent').textContent=`${Number(t.ejercido_pct||0).toFixed(1)}%`;
       const movementsUrl=`?view=movimientos&departamento_id=${departmentId}&year=${yearSelect.value}`;
       document.getElementById('departmentMovementsLink')?.setAttribute('href',movementsUrl);
       document.getElementById('departmentAllMovementsLink')?.setAttribute('href',movementsUrl);

@@ -4,13 +4,12 @@
   </div>
   <button class="btn btn-primary" id="newSubitemBtn">Nuevo sub-item</button>
 </section>
-<section class="panel">
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Código</th><th>Sub-item</th><th>Tipo</th><th>Departamento</th><th>Estatus</th><th></th></tr></thead>
-      <tbody id="subitemTable"></tbody>
-    </table>
+<section class="panel expandable-module-panel subitem-module-panel">
+  <div class="panel-head">
+    <div><span class="eyebrow">CATÁLOGO</span><h2>Sub-items presupuestales</h2><p class="muted">Toca un registro para consultar su detalle o editarlo.</p></div>
+    <span class="badge neutral" id="subitemCount">0 registros</span>
   </div>
+  <div id="subitemList" class="expandable-list subitem-expandable-list"><div class="empty-state">Cargando sub-items…</div></div>
 </section>
 <div class="modal hidden" id="subitemModal">
   <div class="modal-card">

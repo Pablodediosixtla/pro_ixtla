@@ -29,7 +29,6 @@ $requestedYear=(int)($_GET['year']??date('Y'));
   <article class="department-kpi-card entries"><span class="department-kpi-icon">↗</span><div><small>Entradas</small><strong id="departmentEntries">$0.00</strong></div></article>
   <article class="department-kpi-card available"><span class="department-kpi-icon">◫</span><div><small>Disponible</small><strong id="departmentAvailable">$0.00</strong></div></article>
   <article class="department-kpi-card spent"><span class="department-kpi-icon">↘</span><div><small>Ejercido</small><strong id="departmentSpent">$0.00</strong></div></article>
-  <article class="department-kpi-card percent"><span class="department-kpi-icon">◔</span><div><small>% ejercido</small><strong id="departmentPercent">0%</strong></div></article>
 </div>
 
 <div class="department-summary-main-grid">

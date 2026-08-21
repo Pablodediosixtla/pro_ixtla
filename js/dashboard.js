@@ -8,6 +8,10 @@
       document.getElementById('kpiEntries').textContent=App.money(d.totals.entradas);
       document.getElementById('kpiOutputs').textContent=App.money(d.totals.salidas);
       document.getElementById('kpiAvailable').textContent=App.money(d.totals.disponible);
+      document.getElementById('kpiExercised').textContent=App.money(d.totals.salidas);
+      const exercisedPct=Number(d.totals.ejercido_pct||0).toFixed(1)+'%';
+      document.getElementById('kpiExercisedPct').textContent=exercisedPct;
+      document.getElementById('kpiExercisedPctMobile').textContent=exercisedPct;
       document.getElementById('pendingRequests').textContent=d.pending_requests;
       document.getElementById('openClarifications').textContent=d.open_clarifications;
       renderMonths(d.monthly);

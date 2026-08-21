@@ -20,11 +20,12 @@ $dashFirstName=$user['first_name']??$user['name']??'Usuario';
     <?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="btn dashboard-register-btn" href="?view=nuevo-movimiento">Registrar movimiento</a><?php endif;?>
   </div>
 </section>
-<div class="kpi-grid">
+<div class="kpi-grid kpi-grid-five">
   <article class="kpi-card"><span class="kpi-icon green"><?=nav_icon('bank')?></span><small>Presupuesto asignado</small><strong id="kpiAssigned">$0.00</strong><em>Base anual autorizada</em></article>
   <article class="kpi-card"><span class="kpi-icon blue">↗</span><small>Entradas</small><strong id="kpiEntries">$0.00</strong><em>Recursos agregados</em></article>
   <article class="kpi-card"><span class="kpi-icon red">↘</span><small>Salidas</small><strong id="kpiOutputs">$0.00</strong><em>Ejercicio registrado</em></article>
   <article class="kpi-card"><span class="kpi-icon teal">✓</span><small>Disponible</small><strong id="kpiAvailable">$0.00</strong><em>Saldo actual</em></article>
+  <article class="kpi-card kpi-card-exercised"><span class="kpi-icon gold">◔</span><small>Ejercido</small><strong id="kpiExercised">$0.00</strong><em><b id="kpiExercisedPct">0.0%</b> del presupuesto asignado</em><span class="kpi-mobile-percent" id="kpiExercisedPctMobile">0.0%</span></article>
 </div>
 <div class="quick-grid">
   <a href="?view=solicitudes" class="quick-card"><span>▤</span><div><b>Solicitudes pendientes</b><strong id="pendingRequests">0</strong></div></a>
