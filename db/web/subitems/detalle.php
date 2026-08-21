@@ -5,6 +5,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/lib/bootstrap.php';
 require_method('GET');
 $user = require_permission('PRESUPUESTO_VER', 'MOVIMIENTO_VER');
+if (!user_can_view_department_financials($user)) {
+    json_response(['ok'=>false,'error'=>'Tu perfil no tiene acceso al resumen financiero del departamento'],403);
+}
 
 $departmentId = (int)($_GET['departamento_id'] ?? 0);
 $subitemId = (int)($_GET['subitem_id'] ?? 0);

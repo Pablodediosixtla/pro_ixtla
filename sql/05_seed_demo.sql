@@ -66,7 +66,7 @@ WHERE r.codigo='SUPERVISOR' AND p.codigo IN (
 INSERT IGNORE INTO rol_permiso (rol_id,permiso_id)
 SELECT r.rol_id,p.permiso_id FROM rol r JOIN permiso p
 WHERE r.codigo='SUBORDINADO' AND p.codigo IN (
- 'PRESUPUESTO_VER','SOLICITUD_CREAR','MOVIMIENTO_VER','ACLARACION_CREAR'
+ 'SOLICITUD_CREAR','MOVIMIENTO_VER','ACLARACION_CREAR'
 );
 
 -- =============================================================

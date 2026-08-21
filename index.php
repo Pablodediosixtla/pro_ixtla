@@ -42,4 +42,11 @@ if ($view === 'pagos' && !user_has_any_role($user, ['ADMIN','PRESIDENTE','TESORE
     $view='dashboard';
 }
 
+// Los perfiles de alcance PROPIO no pueden abrir vistas con información
+// presupuestal agregada del departamento aunque el rol conserve un permiso
+// histórico PRESUPUESTO_VER en la base.
+if (user_is_own_scope_only($user) && in_array($view, ['presupuestos','departamento-resumen','subcategoria-detalle'], true)) {
+    $view='dashboard';
+}
+
 include __DIR__.'/views/layout.php';

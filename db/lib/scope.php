@@ -48,17 +48,27 @@ function movement_is_visible(mysqli $db, array $user, array $movement): bool {
     $departmentId=(int)($movement['departamento_id']??0);
     $scope=highest_scope_for_department($user,$departmentId);
     if($scope==='DEPARTAMENTO') return true;
+
     $uid=(int)$user['user_id'];
+    $type=strtoupper((string)($movement['tipo']??''));
+
     if($scope==='JERARQUIA'){
+        // Supervisores sí pueden consultar las entradas de dinero de su departamento.
+        if($type==='ENTRADA') return true;
+
+        // Para salidas, conservan el alcance de su jerarquía.
         $ids=hierarchy_user_ids($db,$uid,$departmentId);
-        foreach(['solicitado_por_usuario_id','otorgado_a_usuario_id','registrado_por_usuario_id'] as $field){
+        foreach(['solicitado_por_usuario_id','otorgado_a_usuario_id'] as $field){
             $id=(int)($movement[$field]??0);
-            if($id>0 && in_array($id,$ids,true))return true;
+            if($id>0 && in_array($id,$ids,true)) return true;
         }
         return false;
     }
+
     if($scope==='PROPIO'){
-        return in_array($uid,[(int)($movement['solicitado_por_usuario_id']??0),(int)($movement['otorgado_a_usuario_id']??0),(int)($movement['registrado_por_usuario_id']??0)],true);
+        // Un subordinado solo ve salidas que él mismo solicitó. No ve entradas
+        // departamentales ni movimientos registrados/otorgados a terceros.
+        return $type==='SALIDA' && (int)($movement['solicitado_por_usuario_id']??0)===$uid;
     }
     return false;
 }
@@ -74,5 +84,9 @@ function request_is_visible(mysqli $db, array $user, array $request): bool {
         return in_array((int)($request['solicitado_por_usuario_id']??0),$ids,true)
             || in_array((int)($request['otorgado_a_usuario_id']??0),$ids,true);
     }
-    return (int)($request['solicitado_por_usuario_id']??0)===$uid || (int)($request['otorgado_a_usuario_id']??0)===$uid;
+    if($scope==='PROPIO'){
+        // El subordinado ve exclusivamente las solicitudes que él originó.
+        return (int)($request['solicitado_por_usuario_id']??0)===$uid;
+    }
+    return false;
 }

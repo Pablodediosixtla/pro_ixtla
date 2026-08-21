@@ -847,3 +847,6 @@
   }
   .kpi-grid-home .kpi-card-exercised .kpi-mobile-percent{font-size:.52rem;padding:4px 6px}
 }
+
+/* V4.12 — perfiles de alcance PROPIO */
+.dashboard-grid-own{grid-template-columns:minmax(0,1fr)}

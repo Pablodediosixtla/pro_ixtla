@@ -54,6 +54,35 @@ function user_is_global(array $user): bool {
     return false;
 }
 
+/**
+ * Devuelve true cuando el usuario únicamente tiene asignaciones de alcance PROPIO.
+ * Se usa para perfiles subordinados y para cualquier rol personalizado equivalente.
+ */
+function user_is_own_scope_only(array $user): bool {
+    $assignments = $user['assignments'] ?? [];
+    if (!$assignments) return false;
+    $hasOwn = false;
+    foreach ($assignments as $a) {
+        $scope = strtoupper((string)($a['scope'] ?? ''));
+        if ($scope === 'PROPIO') {
+            $hasOwn = true;
+            continue;
+        }
+        if (in_array($scope, ['JERARQUIA','DEPARTAMENTO','GLOBAL'], true)) {
+            return false;
+        }
+    }
+    return $hasOwn;
+}
+
+/**
+ * La información presupuestal agregada del departamento (asignado, entradas,
+ * disponible y distribución) requiere al menos alcance de JERARQUIA.
+ */
+function user_can_view_department_financials(array $user): bool {
+    return !user_is_own_scope_only($user);
+}
+
 function user_department_ids(array $user): array {
     $ids=[];
     foreach ($user['assignments'] ?? [] as $a) {

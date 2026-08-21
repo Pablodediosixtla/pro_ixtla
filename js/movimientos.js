@@ -41,7 +41,7 @@
        const deps=await App.api('api.php?route=departamentos/list');
        dep.innerHTML='<option value="">Todos</option>'+deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');
        if(urlParams.get('departamento_id'))dep.value=urlParams.get('departamento_id');
-       if(urlParams.get('tipo'))type.value=urlParams.get('tipo');
+       if(window.PROIXTLA_OWN_SCOPE_ONLY){type.value='SALIDA';type.disabled=true}else if(urlParams.get('tipo'))type.value=urlParams.get('tipo');
        if(urlParams.get('q'))search.value=urlParams.get('q');
        await load();
        if(urlParams.get('movement_id'))await open(urlParams.get('movement_id'));
@@ -53,7 +53,7 @@
        const qs=new URLSearchParams({year:year.value});
        if(month.value)qs.set('month',month.value);
        if(dep.value)qs.set('departamento_id',dep.value);
-       if(type.value)qs.set('tipo',type.value);
+       if(window.PROIXTLA_OWN_SCOPE_ONLY)qs.set('tipo','SALIDA');else if(type.value)qs.set('tipo',type.value);
        if(status.value)qs.set('estatus',status.value);
        if(search.value)qs.set('q',search.value);
        rows=await App.api('api.php?route=movimientos/list&'+qs);

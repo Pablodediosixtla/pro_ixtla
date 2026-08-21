@@ -15,7 +15,7 @@ if($id<=0||!in_array($status,['ABIERTA','EN_REVISION','RESUELTA','CERRADA'],true
 $db=conectar();
 if(!$db)json_response(['ok'=>false,'error'=>'Sin conexión a base de datos'],503);
 
-$st=$db->prepare("SELECT a.*,pm.departamento_id,pm.solicitado_por_usuario_id,pm.otorgado_a_usuario_id,pm.registrado_por_usuario_id
+$st=$db->prepare("SELECT a.*,pm.tipo,pm.departamento_id,pm.solicitado_por_usuario_id,pm.otorgado_a_usuario_id,pm.registrado_por_usuario_id
                   FROM movimiento_aclaracion a
                   JOIN presupuesto_movimiento pm ON pm.movimiento_id=a.movimiento_id
                   WHERE a.aclaracion_id=? LIMIT 1");

@@ -27,6 +27,7 @@ $roleLabel=$primary['role_name']??(user_role_codes($user)[0]??'Usuario');
 $departmentLabel=$primary['department']??'Alcance municipal';
 $roleCodes=user_role_codes($user);
 $canUsePayments=user_has_any_role($user,['ADMIN','PRESIDENTE','TESORERIA']);
+$canViewDepartmentFinancials=user_can_view_department_financials($user);
 $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '1';
 ?><!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#31513f"><title><?=htmlspecialchars($pageTitle)?> | Presupuesto Ixtlahuacán</title><link rel="stylesheet" href="css/styles.css?v=<?=rawurlencode($assetVersion)?>"><link rel="stylesheet" href="css/presupuesto.css?v=<?=rawurlencode($assetVersion)?>"></head><body>
@@ -37,7 +38,7 @@ $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '
   <nav class="nav-list">
     <div class="nav-section-label">GENERAL</div>
     <a class="<?=$view==='dashboard'?'active':''?>" href="?view=dashboard"><span class="nav-icon"><?=nav_icon('home')?></span><span>Inicio</span></a>
-    <?php if(nav_ok($perms,'PRESUPUESTO_VER')):?><a class="<?=in_array($view,['presupuestos','departamento-resumen','subcategoria-detalle'],true)?'active':''?>" href="?view=presupuestos"><span class="nav-icon"><?=nav_icon('wallet')?></span><span>Presupuestos</span></a><?php endif;?>
+    <?php if($canViewDepartmentFinancials&&nav_ok($perms,'PRESUPUESTO_VER')):?><a class="<?=in_array($view,['presupuestos','departamento-resumen','subcategoria-detalle'],true)?'active':''?>" href="?view=presupuestos"><span class="nav-icon"><?=nav_icon('wallet')?></span><span>Presupuestos</span></a><?php endif;?>
     <?php if($canUsePayments):?><a class="<?=$view==='pagos'?'active':''?>" href="?view=pagos"><span class="nav-icon"><?=nav_icon('payments')?></span><span>Pagos</span></a><?php endif;?>
 
     <?php if(nav_ok($perms,'SOLICITUD_CREAR')||nav_ok($perms,'SOLICITUD_APROBAR')||nav_ok($perms,'MOVIMIENTO_VER')):?><div class="nav-section-label">OPERACIÓN</div><?php endif;?>
@@ -68,4 +69,4 @@ $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '
   <?php if(nav_ok($perms,'ACLARACION_CREAR')||nav_ok($perms,'ACLARACION_GESTIONAR')):?><a class="<?=$view==='aclaraciones'?'active':''?>" href="?view=aclaraciones"><span>◌</span><small>Seguimiento</small></a><?php endif;?>
 </nav>
 <div id="toastRoot" class="toast-root"></div><div class="modal-backdrop hidden" id="globalBackdrop"></div>
-<script>window.PROIXTLA_USER=<?=json_encode($user,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;window.PROIXTLA_CSRF=<?=json_encode($_SESSION['csrf']??'')?>;</script><script src="js/app.js?v=<?=rawurlencode($assetVersion)?>"></script><script src="js/<?=$view==='nuevo-movimiento'?'movimientos':$view?>.js?v=<?=rawurlencode($assetVersion)?>"></script></body></html>
+<script>window.PROIXTLA_USER=<?=json_encode($user,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)?>;window.PROIXTLA_CSRF=<?=json_encode($_SESSION['csrf']??'')?>;window.PROIXTLA_OWN_SCOPE_ONLY=<?=user_is_own_scope_only($user)?'true':'false'?>;</script><script src="js/app.js?v=<?=rawurlencode($assetVersion)?>"></script><script src="js/<?=$view==='nuevo-movimiento'?'movimientos':$view?>.js?v=<?=rawurlencode($assetVersion)?>"></script></body></html>

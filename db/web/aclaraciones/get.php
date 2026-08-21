@@ -8,7 +8,7 @@ if($id<=0)json_response(['ok'=>false,'error'=>'Aclaración inválida'],400);
 $db=conectar();
 if(!$db)json_response(['ok'=>false,'error'=>'Sin conexión a base de datos'],503);
 
-$st=$db->prepare("SELECT a.*,pm.folio movimiento_folio,pm.departamento_id,
+$st=$db->prepare("SELECT a.*,pm.folio movimiento_folio,pm.tipo,pm.departamento_id,
                          pm.solicitado_por_usuario_id,pm.otorgado_a_usuario_id,pm.registrado_por_usuario_id,
                          d.nombre departamento
                   FROM movimiento_aclaracion a
