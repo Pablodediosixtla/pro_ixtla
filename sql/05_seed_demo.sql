@@ -135,13 +135,17 @@ ON DUPLICATE KEY UPDATE jefe_usuario_id=VALUES(jefe_usuario_id),es_principal=1,e
 -- =============================================================
 -- SUBITEMS
 -- =============================================================
-INSERT INTO presupuesto_subitem (departamento_id,codigo,nombre,descripcion,estatus,created_by_usuario_id) VALUES
-(NULL,'FER','Ferretería','Materiales y herramientas de ferretería','ACTIVO',@U_ADMIN),
-(NULL,'GAS','Gasolina','Combustibles y lubricantes','ACTIVO',@U_ADMIN),
-(NULL,'PAP','Papelería','Materiales de oficina y papelería','ACTIVO',@U_ADMIN),
-(NULL,'SER','Servicios','Servicios generales y contrataciones','ACTIVO',@U_ADMIN),
-(NULL,'MAN','Mantenimiento','Mantenimiento y refacciones','ACTIVO',@U_ADMIN),
-(@D_CUL,'EVE','Eventos culturales','Producción y operación de eventos culturales','ACTIVO',@U_ADMIN)
+INSERT INTO presupuesto_subitem (departamento_id,tipo,codigo,nombre,descripcion,estatus,created_by_usuario_id) VALUES
+(NULL,'SALIDA','FER','Ferretería','Materiales y herramientas de ferretería','ACTIVO',@U_ADMIN),
+(NULL,'SALIDA','GAS','Gasolina','Combustibles y lubricantes','ACTIVO',@U_ADMIN),
+(NULL,'SALIDA','PAP','Papelería','Materiales de oficina y papelería','ACTIVO',@U_ADMIN),
+(NULL,'SALIDA','SER','Servicios','Servicios generales y contrataciones','ACTIVO',@U_ADMIN),
+(NULL,'SALIDA','MAN','Mantenimiento','Mantenimiento y refacciones','ACTIVO',@U_ADMIN),
+(@D_CUL,'SALIDA','EVE','Eventos culturales','Producción y operación de eventos culturales','ACTIVO',@U_ADMIN),
+(NULL,'ENTRADA','APO','Aportaciones','Aportaciones estatales, federales o extraordinarias','ACTIVO',@U_ADMIN),
+(NULL,'ENTRADA','ING','Ingresos propios','Ingresos propios asignados al departamento','ACTIVO',@U_ADMIN),
+(NULL,'ENTRADA','REI','Reintegros','Reintegros y recuperaciones de recurso','ACTIVO',@U_ADMIN),
+(NULL,'ENTRADA','CON','Convenios','Recursos recibidos mediante convenios','ACTIVO',@U_ADMIN)
 ON DUPLICATE KEY UPDATE nombre=VALUES(nombre),descripcion=VALUES(descripcion),estatus='ACTIVO';
 
 -- =============================================================
@@ -154,9 +158,9 @@ SELECT departamento_id,2026,
 FROM departamento
 ON DUPLICATE KEY UPDATE presupuesto_asignado=VALUES(presupuesto_asignado),observaciones=VALUES(observaciones),estatus='ACTIVO',updated_by_usuario_id=@U_ADMIN;
 
-SET @S_EVE=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id=@D_CUL AND codigo='EVE' LIMIT 1);
-SET @S_PAP=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id IS NULL AND codigo='PAP' LIMIT 1);
-SET @S_SER=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id IS NULL AND codigo='SER' LIMIT 1);
+SET @S_EVE=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id=@D_CUL AND tipo='SALIDA' AND codigo='EVE' LIMIT 1);
+SET @S_PAP=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id IS NULL AND tipo='SALIDA' AND codigo='PAP' LIMIT 1);
+SET @S_SER=(SELECT subitem_id FROM presupuesto_subitem WHERE departamento_id IS NULL AND tipo='SALIDA' AND codigo='SER' LIMIT 1);
 
 -- Solicitud demo de Cultura.
 INSERT INTO presupuesto_solicitud (folio,ejercicio,departamento_id,subitem_id,fecha_solicitud,monto_solicitado,concepto,solicitado_por_usuario_id,otorgado_a_usuario_id,beneficiario_nombre,area_solicitante,estatus)

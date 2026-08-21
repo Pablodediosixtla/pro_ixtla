@@ -54,7 +54,7 @@ SELECT
   pm.movimiento_id, pm.folio, pm.ejercicio, pm.tipo, pm.fecha, pm.monto, pm.concepto,
   pm.estatus, pm.metodo_pago, pm.referencia, pm.beneficiario_nombre, pm.area_solicitante,
   pm.departamento_id, d.codigo AS departamento_codigo, d.nombre AS departamento,
-  pm.subitem_id, s.codigo AS subitem_codigo, s.nombre AS subitem,
+  pm.subitem_id, s.tipo AS subitem_tipo, s.codigo AS subitem_codigo, s.nombre AS subitem,
   pm.solicitud_id,
   pm.solicitado_por_usuario_id,
   CONCAT_WS(' ', us.nombre, us.apellido_paterno, us.apellido_materno) AS solicitado_por,

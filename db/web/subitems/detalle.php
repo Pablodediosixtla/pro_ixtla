@@ -46,7 +46,7 @@ if ($subitemId === 0) {
 } else {
     $st = $db->prepare("SELECT subitem_id,codigo,nombre,descripcion
                         FROM presupuesto_subitem
-                        WHERE subitem_id=? AND estatus='ACTIVO'
+                        WHERE subitem_id=? AND estatus='ACTIVO' AND tipo='SALIDA'
                           AND (departamento_id IS NULL OR departamento_id=?)
                         LIMIT 1");
     $st->bind_param('ii', $subitemId, $departmentId);

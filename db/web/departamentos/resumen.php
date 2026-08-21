@@ -56,7 +56,7 @@ $subitems = [];
 $subitemOrder = [];
 $st = $db->prepare("SELECT subitem_id,departamento_id,codigo,nombre,descripcion
                     FROM presupuesto_subitem
-                    WHERE estatus='ACTIVO' AND (departamento_id IS NULL OR departamento_id=?)
+                    WHERE estatus='ACTIVO' AND tipo='SALIDA' AND (departamento_id IS NULL OR departamento_id=?)
                     ORDER BY CASE WHEN departamento_id=? THEN 0 ELSE 1 END,nombre");
 $st->bind_param('ii', $departmentId, $departmentId);
 $st->execute();

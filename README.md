@@ -198,3 +198,7 @@ La base sigue siendo `ixtla01_dep02` y la aplicación conserva el gateway `api.p
 - Cada movimiento muestra de inicio el folio, concepto, fecha/beneficiario y el monto de salida con signo negativo.
 - Al tocar un registro se expande para mostrar otorgado a, usuario que registró, fecha, seguimiento, referencia y acceso al movimiento completo.
 - En escritorio se conserva la tabla detallada existente.
+
+
+## V4.8 - Sub-items por tipo de movimiento
+Los sub-items se clasifican como `ENTRADA` o `SALIDA`. Pagos solo consume sub-items de entrada; Solicitudes y salidas solo consumen sub-items de salida. Para una base existente, ejecutar una sola vez `sql/09_v48_subitems_entrada_salida.sql`.

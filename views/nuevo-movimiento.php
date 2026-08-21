@@ -18,7 +18,7 @@
           <label>Departamento<select name="departamento_id" id="movementFormDepartment" required></select></label>
           <label>Fecha<input name="fecha" type="date" required></label>
           <label>Monto<input name="monto" type="number" min="0.01" step="0.01" required></label>
-          <label>Sub-item<select name="subitem_id" id="movementFormSubitem"><option value="">Sin sub-item</option></select></label>
+          <label>Sub-item de salida<select name="subitem_id" id="movementFormSubitem"><option value="">Sin sub-item</option></select></label>
           <label class="full">Concepto / uso<textarea name="concepto" rows="3" placeholder="Describe de forma breve y clara el uso del recurso..." required></textarea></label>
         </div>
       </section>

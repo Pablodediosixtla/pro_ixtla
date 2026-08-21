@@ -32,3 +32,6 @@ SELECT *
 FROM vw_presupuesto_departamento_resumen
 WHERE ejercicio=2026
 ORDER BY departamento;
+
+-- SUBITEMS POR TIPO
+SELECT tipo,COUNT(*) total FROM presupuesto_subitem GROUP BY tipo ORDER BY tipo;

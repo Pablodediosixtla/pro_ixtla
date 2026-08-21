@@ -1,7 +1,7 @@
 <section class="page-head payments-page-head">
   <div>
     <span class="eyebrow">ENTRADAS DE RECURSO</span>
-    <p class="muted">Registra ingresos de dinero por departamento y clasifícalos por sub-item para mantener trazabilidad presupuestal.</p>
+    <p class="muted">Registra ingresos de dinero por departamento y clasifícalos por sub-item de entrada para mantener trazabilidad presupuestal.</p>
   </div>
   <div class="page-actions">
     <label class="compact-control">Ejercicio<select id="paymentYear"></select></label>
@@ -32,7 +32,7 @@
     <div class="modal-head"><div><span class="eyebrow">NUEVA ENTRADA</span><h2>Registrar ingreso de recurso</h2></div><button class="icon-btn" data-close-modal>✕</button></div>
     <form id="paymentForm" class="form-grid">
       <label>Departamento<select name="departamento_id" id="paymentFormDepartment" required></select></label>
-      <label>Sub-item<select name="subitem_id" id="paymentSubitem"><option value="">Sin sub-item</option></select></label>
+      <label>Sub-item de entrada<select name="subitem_id" id="paymentSubitem"><option value="">Sin sub-item</option></select></label>
       <label>Fecha<input type="date" name="fecha" id="paymentDate" required></label>
       <label>Monto<input type="number" name="monto" min="0.01" step="0.01" required></label>
       <label class="full">Origen / concepto<input name="concepto" required placeholder="Ej. Aportación extraordinaria, recuperación, convenio..."></label>

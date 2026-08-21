@@ -60,7 +60,7 @@
     const d=depForm.value;
     if(!d)return;
     try{
-      const [subs,users]=await Promise.all([App.api('api.php?route=subitems/list&departamento_id='+d),App.api('api.php?route=usuarios/options&departamento_id='+d)]);
+      const [subs,users]=await Promise.all([App.api('api.php?route=subitems/list&tipo=SALIDA&departamento_id='+d),App.api('api.php?route=usuarios/options&departamento_id='+d)]);
       subSel.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
       benefSel.innerHTML='<option value="">Persona externa / sin usuario</option>'+users.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}</option>`).join('');
     }catch(e){App.toast(e.message,'error')}

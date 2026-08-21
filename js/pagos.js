@@ -54,7 +54,7 @@
     const dep=depForm.value;
     if(!dep){subitem.innerHTML='<option value="">Sin sub-item</option>';return}
     try{
-      const items=await App.api('api.php?route=subitems/list&departamento_id='+encodeURIComponent(dep));
+      const items=await App.api('api.php?route=subitems/list&tipo=ENTRADA&departamento_id='+encodeURIComponent(dep));
       subitem.innerHTML='<option value="">Sin sub-item</option>'+items.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
     }catch(e){App.toast(e.message,'error')}
   }

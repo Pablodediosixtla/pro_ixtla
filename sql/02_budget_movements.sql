@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS presupuesto_subitem (
     subitem_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     departamento_id BIGINT UNSIGNED NULL COMMENT 'NULL = subitem global',
     departamento_scope BIGINT UNSIGNED GENERATED ALWAYS AS (IFNULL(departamento_id, 0)) STORED,
+    tipo ENUM('ENTRADA','SALIDA') NOT NULL DEFAULT 'SALIDA',
     codigo VARCHAR(40) NOT NULL,
     nombre VARCHAR(150) NOT NULL,
     descripcion VARCHAR(500) NULL,
@@ -35,8 +36,9 @@ CREATE TABLE IF NOT EXISTS presupuesto_subitem (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (subitem_id),
-    UNIQUE KEY uk_subitem_scope_codigo (departamento_scope, codigo),
+    UNIQUE KEY uk_subitem_scope_tipo_codigo (departamento_scope, tipo, codigo),
     KEY ix_subitem_departamento (departamento_id),
+    KEY ix_subitem_tipo_estatus (tipo, estatus),
     KEY ix_subitem_estatus (estatus),
     CONSTRAINT fk_subitem_dep FOREIGN KEY (departamento_id) REFERENCES departamento(departamento_id)
       ON UPDATE RESTRICT ON DELETE RESTRICT,
