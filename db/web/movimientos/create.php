@@ -5,8 +5,39 @@ $db=conectar();if(!$db)json_response(['ok'=>false,'error'=>'Sin conexión a base
 if($requestId>0){$type='SALIDA';$st=$db->prepare("SELECT * FROM presupuesto_solicitud WHERE solicitud_id=? LIMIT 1");$st->bind_param('i',$requestId);$st->execute();$request=$st->get_result()->fetch_assoc();$st->close();if(!$request){$db->close();json_response(['ok'=>false,'error'=>'Solicitud no encontrada'],404);}if($request['estatus']!=='AUTORIZADA'){$db->close();json_response(['ok'=>false,'error'=>'La solicitud debe estar AUTORIZADA antes de registrarse como salida'],409);}}
 $dep=$request?(int)$request['departamento_id']:(int)($in['departamento_id']??0);$sub=$request?($request['subitem_id']!==null?(int)$request['subitem_id']:null):(($in['subitem_id']??'')!==''?(int)$in['subitem_id']:null);$year=$request?(int)$request['ejercicio']:(int)($in['ejercicio']??date('Y'));$date=trim((string)($in['fecha']??date('Y-m-d')));$amount=$request?(float)$request['monto_solicitado']:money_value($in['monto']??0);$concept=$request?(string)$request['concepto']:trim((string)($in['concepto']??''));$requester=$request?(int)$request['solicitado_por_usuario_id']:(($in['solicitado_por_usuario_id']??'')!==''?(int)$in['solicitado_por_usuario_id']:(int)$user['user_id']);$benefUser=$request?($request['otorgado_a_usuario_id']!==null?(int)$request['otorgado_a_usuario_id']:null):(($in['otorgado_a_usuario_id']??'')!==''?(int)$in['otorgado_a_usuario_id']:null);$benefName=$request?(string)($request['beneficiario_nombre']??''):trim((string)($in['beneficiario_nombre']??''));$area=$request?(string)($request['area_solicitante']??''):trim((string)($in['area_solicitante']??''));$method=strtoupper(trim((string)($in['metodo_pago']??'')));$reference=trim((string)($in['referencia']??''));if($dep<=0||$year<2020||$year>2100||$amount<=0||$concept===''){$db->close();json_response(['ok'=>false,'error'=>'Departamento, monto y concepto son obligatorios'],400);}if(!in_array($method,['EFECTIVO','TRANSFERENCIA','CHEQUE','TARJETA','OTRO'],true))$method=null;
 if($sub!==null){$st=$db->prepare("SELECT subitem_id,tipo,departamento_id,estatus FROM presupuesto_subitem WHERE subitem_id=? LIMIT 1");$st->bind_param('i',$sub);$st->execute();$subitem=$st->get_result()->fetch_assoc();$st->close();if(!$subitem||$subitem['estatus']!=='ACTIVO'){$db->close();json_response(['ok'=>false,'error'=>'El sub-item seleccionado no está disponible'],409);}if($subitem['tipo']!==$type){$db->close();json_response(['ok'=>false,'error'=>'El sub-item seleccionado es de '.$subitem['tipo'].' y no puede usarse en un movimiento de '.$type],409);}if($subitem['departamento_id']!==null&&(int)$subitem['departamento_id']!==$dep){$db->close();json_response(['ok'=>false,'error'=>'El sub-item seleccionado pertenece a otro departamento'],409);}}
-if($type==='SALIDA'){$balance=department_balance($db,$dep,$year);if($amount>$balance['disponible']){$db->close();json_response(['ok'=>false,'error'=>'La salida excede el presupuesto disponible del departamento'],409);}}
-if(!user_is_global($user)&&!in_array($dep,visible_department_ids($db,$user),true)){$db->close();json_response(['ok'=>false,'error'=>'No puedes registrar movimientos para ese departamento'],403);}$requestDbId=$requestId>0?$requestId:null;$folio=next_folio($db,'MOVIMIENTO',$year);$uid=(int)$user['user_id'];$fileSaved=null;$db->begin_transaction();
+// El actor debe tener alcance sobre el departamento seleccionado.
+if(!user_is_global($user)&&!in_array($dep,visible_department_ids($db,$user),true)){$db->close();json_response(['ok'=>false,'error'=>'No puedes registrar movimientos para ese departamento'],403);}
+
+// En movimientos directos, Solicitado por y Otorgado a (cuando sea usuario)
+// deben pertenecer al departamento seleccionado. Los perfiles globales pueden
+// operar cualquier departamento, pero no mezclar personas de otras áreas.
+$validateDepartmentUser = static function(mysqli $db, int $candidateId, int $departmentId): bool {
+    if($candidateId<=0)return false;
+    $st=$db->prepare("SELECT 1 FROM usuario u JOIN usuario_departamento ud ON ud.usuario_id=u.usuario_id WHERE u.usuario_id=? AND u.estatus='ACTIVO' AND ud.departamento_id=? AND ud.estatus='ACTIVO' LIMIT 1");
+    if(!$st)return false;
+    $st->bind_param('ii',$candidateId,$departmentId);
+    if(!$st->execute()){$st->close();return false;}
+    $ok=(bool)$st->get_result()->fetch_row();
+    $st->close();
+    return $ok;
+};
+
+if(!$request){
+    if(!$validateDepartmentUser($db,$requester,$dep)){
+        $db->close();
+        json_response(['ok'=>false,'error'=>'Selecciona en Solicitado por un usuario activo del departamento elegido'],409);
+    }
+    if($benefUser!==null&&!$validateDepartmentUser($db,(int)$benefUser,$dep)){
+        $db->close();
+        json_response(['ok'=>false,'error'=>'El usuario seleccionado en Otorgado a no pertenece al departamento elegido'],409);
+    }
+}
+
+// Una salida puede exceder el saldo disponible. No se bloquea: se registra el
+// movimiento, queda saldo negativo y se devuelve una advertencia explícita.
+$balanceBefore=department_balance($db,$dep,$year);
+$exceedsAvailable=$type==='SALIDA'&&$amount>$balanceBefore['disponible'];
+$overage=$exceedsAvailable?round($amount-$balanceBefore['disponible'],2):0.0;$requestDbId=$requestId>0?$requestId:null;$folio=next_folio($db,'MOVIMIENTO',$year);$uid=(int)$user['user_id'];$fileSaved=null;$db->begin_transaction();
 try{$st=$db->prepare("INSERT INTO presupuesto_movimiento(folio,ejercicio,departamento_id,subitem_id,solicitud_id,tipo,fecha,monto,concepto,solicitado_por_usuario_id,otorgado_a_usuario_id,beneficiario_nombre,area_solicitante,metodo_pago,referencia,estatus,registrado_por_usuario_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'REGISTRADO',?)");$st->bind_param('siiiissdsiissssi',$folio,$year,$dep,$sub,$requestDbId,$type,$date,$amount,$concept,$requester,$benefUser,$benefName,$area,$method,$reference,$uid);$st->execute();$id=(int)$st->insert_id;$st->close();if($requestId>0){$st=$db->prepare("UPDATE presupuesto_solicitud SET estatus='PAGADA',movimiento_id=?,resuelto_por_usuario_id=?,resuelto_at=NOW() WHERE solicitud_id=?");$st->bind_param('iii',$id,$uid,$requestId);$st->execute();$st->close();}
 if(isset($_FILES['evidencia'])){$fileSaved=save_evidence_file($_FILES['evidencia'],$folio);if($fileSaved){$st=$db->prepare("INSERT INTO presupuesto_movimiento_archivo(movimiento_id,nombre_original,nombre_guardado,ruta_relativa,mime_type,size_bytes,uploaded_by_usuario_id) VALUES(?,?,?,?,?,?,?)");$st->bind_param('issssii',$id,$fileSaved['nombre_original'],$fileSaved['nombre_guardado'],$fileSaved['ruta_relativa'],$fileSaved['mime_type'],$fileSaved['size_bytes'],$uid);$st->execute();$st->close();}}
-audit_log($db,$uid,'MOVIMIENTO_'.$type,'MOVIMIENTO',$id,$folio,null,['folio'=>$folio,'tipo'=>$type,'departamento_id'=>$dep,'monto'=>$amount,'concepto'=>$concept,'solicitud_id'=>$requestId?:null,'otorgado_a_usuario_id'=>$benefUser,'beneficiario_nombre'=>$benefName]);$db->commit();$balance=department_balance($db,$dep,$year);$db->close();json_response(['ok'=>true,'data'=>['movimiento_id'=>$id,'folio'=>$folio,'balance'=>$balance]]);}catch(Throwable $e){$db->rollback();if($fileSaved&&isset($fileSaved['ruta_relativa']))@unlink(project_root().'/'.$fileSaved['ruta_relativa']);$db->close();json_response(['ok'=>false,'error'=>'No se pudo registrar el movimiento: '.$e->getMessage()],500);}
+audit_log($db,$uid,'MOVIMIENTO_'.$type,'MOVIMIENTO',$id,$folio,null,['folio'=>$folio,'tipo'=>$type,'departamento_id'=>$dep,'monto'=>$amount,'concepto'=>$concept,'solicitud_id'=>$requestId?:null,'solicitado_por_usuario_id'=>$requester,'otorgado_a_usuario_id'=>$benefUser,'beneficiario_nombre'=>$benefName,'excede_disponible'=>$exceedsAvailable,'excedente'=>$overage]);$db->commit();$balance=department_balance($db,$dep,$year);$db->close();json_response(['ok'=>true,'data'=>['movimiento_id'=>$id,'folio'=>$folio,'balance'=>$balance,'warning'=>$exceedsAvailable?['code'=>'OVER_BUDGET','message'=>'La salida excede el disponible del departamento','disponible_antes'=>$balanceBefore['disponible'],'excedente'=>$overage]:null]]);}catch(Throwable $e){$db->rollback();if($fileSaved&&isset($fileSaved['ruta_relativa']))@unlink(project_root().'/'.$fileSaved['ruta_relativa']);$db->close();json_response(['ok'=>false,'error'=>'No se pudo registrar el movimiento: '.$e->getMessage()],500);}

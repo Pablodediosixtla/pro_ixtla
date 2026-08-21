@@ -87,11 +87,90 @@
  }
 
  function initForm(){
-   const form=document.getElementById('movementForm'),dep=document.getElementById('movementFormDepartment'),sub=document.getElementById('movementFormSubitem'),req=document.getElementById('authorizedRequest'),requester=document.getElementById('movementRequester'),benef=document.getElementById('movementBeneficiary'),available=document.getElementById('movementAvailable'),yearEl=document.getElementById('movementFormYear');
-   const year=new Date().getFullYear();yearEl.value=year;form.fecha.value=new Date().toISOString().slice(0,10);let budgets=[],requests=[];
-   async function boot(){try{const [deps,b,rs]=await Promise.all([App.api('api.php?route=departamentos/list'),App.api('api.php?route=presupuestos/list&year='+year),App.api('api.php?route=solicitudes/list&year='+year+'&estatus=AUTORIZADA')]);budgets=b;requests=rs;dep.innerHTML='<option value="">Seleccionar</option>'+deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');req.innerHTML='<option value="">Movimiento directo</option>'+requests.map(r=>`<option value="${r.solicitud_id}">${App.escape(r.folio)} · ${App.escape(r.departamento)} · ${App.money(r.monto_solicitado)}</option>`).join('');const urlId=new URLSearchParams(location.search).get('solicitud_id');if(urlId){req.value=urlId;applyRequest()}await depChanged()}catch(e){App.toast(e.message,'error')}}
-   async function depChanged(){const id=dep.value;const b=budgets.find(x=>String(x.departamento_id)===String(id));available.textContent=App.money(b?.disponible||0);if(!id){sub.innerHTML='<option value="">Sin sub-item</option>';requester.innerHTML='<option value="">Usuario actual</option>';benef.innerHTML='<option value="">Persona externa</option>';return}try{const [subs,users]=await Promise.all([App.api('api.php?route=subitems/list&tipo=SALIDA&departamento_id='+id),App.api('api.php?route=usuarios/options&departamento_id='+id)]);sub.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');requester.innerHTML='<option value="">Usuario actual</option>'+users.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}</option>`).join('');benef.innerHTML='<option value="">Persona externa</option>'+users.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}</option>`).join('')}catch(e){App.toast(e.message,'error')}}
-   function applyRequest(){const r=requests.find(x=>String(x.solicitud_id)===String(req.value));const lock=!!r;if(r){dep.value=r.departamento_id;form.monto.value=r.monto_solicitado;form.concepto.value=r.concepto;form.area_solicitante.value=r.area_solicitante||'';form.beneficiario_nombre.value=r.beneficiario_nombre||'';depChanged().then(()=>{form.subitem_id.value=r.subitem_id||'';form.solicitado_por_usuario_id.value=r.solicitado_por_usuario_id||'';form.otorgado_a_usuario_id.value=r.otorgado_a_usuario_id||''})}['departamento_id','monto','concepto'].forEach(n=>form.elements[n].readOnly=lock&&n!=='departamento_id');dep.disabled=lock}
-   dep.addEventListener('change',depChanged);req.addEventListener('change',applyRequest);form.addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(form);if(dep.disabled)fd.set('departamento_id',dep.value);fd.set('ejercicio',year);try{const d=await App.api('api.php?route=movimientos/create',{method:'POST',body:fd});App.toast('Movimiento registrado: '+d.folio);setTimeout(()=>location.href='?view=movimientos',900)}catch(err){App.toast(err.message,'error')}});boot();
+   const form=document.getElementById('movementForm'),dep=document.getElementById('movementFormDepartment'),sub=document.getElementById('movementFormSubitem'),req=document.getElementById('authorizedRequest'),requester=document.getElementById('movementRequester'),benef=document.getElementById('movementBeneficiary'),available=document.getElementById('movementAvailable'),yearEl=document.getElementById('movementFormYear'),amount=document.getElementById('movementAmount'),warning=document.getElementById('movementBudgetWarning'),warningText=document.getElementById('movementBudgetWarningText');
+   const year=new Date().getFullYear();yearEl.value=year;form.fecha.value=new Date().toISOString().slice(0,10);let budgets=[],requests=[],departmentUsers=[];
+
+   const selectedBudget=()=>budgets.find(x=>String(x.departamento_id)===String(dep.value));
+   function updateBudgetWarning(){
+     const b=selectedBudget(),value=Number(amount?.value||0),availableValue=Number(b?.disponible||0),isOutput=(form.tipo?.value||'SALIDA')==='SALIDA';
+     available.textContent=App.money(availableValue);
+     const exceeds=!!dep.value&&isOutput&&value>availableValue&&value>0;
+     warning?.classList.toggle('hidden',!exceeds);
+     available.closest('.available-box')?.classList.toggle('over-budget',exceeds);
+     if(exceeds&&warningText)warningText.textContent=`Disponible: ${App.money(availableValue)} · Salida: ${App.money(value)} · Excedente: ${App.money(value-availableValue)}`;
+   }
+
+   function renderDepartmentUsers(users){
+     departmentUsers=users||[];
+     const userOptions=departmentUsers.map(u=>`<option value="${u.usuario_id}">${App.escape(u.nombre)}${u.rol?' · '+App.escape(u.rol):''}</option>`).join('');
+     requester.innerHTML='<option value="">Seleccionar usuario del departamento</option>'+userOptions;
+     benef.innerHTML='<option value="">Persona externa / sin usuario</option>'+userOptions;
+     const current=departmentUsers.find(u=>u.is_current);
+     if(current)requester.value=String(current.usuario_id);
+   }
+
+   async function boot(){
+     try{
+       const [deps,b,rs]=await Promise.all([App.api('api.php?route=departamentos/list'),App.api('api.php?route=presupuestos/list&year='+year),App.api('api.php?route=solicitudes/list&year='+year+'&estatus=AUTORIZADA')]);
+       budgets=b;requests=rs;
+       dep.innerHTML='<option value="">Seleccionar</option>'+deps.map(d=>`<option value="${d.departamento_id}">${App.escape(d.nombre)}</option>`).join('');
+       req.innerHTML='<option value="">Movimiento directo</option>'+requests.map(r=>`<option value="${r.solicitud_id}">${App.escape(r.folio)} · ${App.escape(r.departamento)} · ${App.money(r.monto_solicitado)}</option>`).join('');
+       const urlId=new URLSearchParams(location.search).get('solicitud_id');
+       if(urlId){req.value=urlId;await applyRequest()}else{await depChanged()}
+       updateBudgetWarning();
+     }catch(e){App.toast(e.message,'error')}
+   }
+
+   async function depChanged(){
+     const id=dep.value;
+     updateBudgetWarning();
+     if(!id){
+       sub.innerHTML='<option value="">Sin sub-item</option>';
+       requester.innerHTML='<option value="">Selecciona primero un departamento</option>';
+       benef.innerHTML='<option value="">Persona externa / sin usuario</option>';
+       departmentUsers=[];
+       return;
+     }
+     try{
+       const movementType=(form.tipo?.value||'SALIDA').toUpperCase();
+       const [subs,users]=await Promise.all([
+         App.api('api.php?route=subitems/list&tipo='+encodeURIComponent(movementType)+'&departamento_id='+encodeURIComponent(id)),
+         App.api('api.php?route=usuarios/options&departamento_id='+encodeURIComponent(id))
+       ]);
+       sub.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
+       renderDepartmentUsers(users);
+       if(!users.length)App.toast('No hay usuarios activos asignados a este departamento','warning');
+     }catch(e){
+       renderDepartmentUsers([]);
+       App.toast(e.message,'error');
+     }
+   }
+
+   async function applyRequest(){
+     const r=requests.find(x=>String(x.solicitud_id)===String(req.value));const lock=!!r;
+     if(r){
+       dep.value=r.departamento_id;form.monto.value=r.monto_solicitado;form.concepto.value=r.concepto;form.area_solicitante.value=r.area_solicitante||'';form.beneficiario_nombre.value=r.beneficiario_nombre||'';
+       await depChanged();
+       form.subitem_id.value=r.subitem_id||'';form.solicitado_por_usuario_id.value=r.solicitado_por_usuario_id||'';form.otorgado_a_usuario_id.value=r.otorgado_a_usuario_id||'';
+     }
+     ['departamento_id','monto','concepto'].forEach(n=>form.elements[n].readOnly=lock&&n!=='departamento_id');dep.disabled=lock;
+     updateBudgetWarning();
+   }
+
+   dep.addEventListener('change',depChanged);
+   req.addEventListener('change',applyRequest);
+   amount?.addEventListener('input',updateBudgetWarning);
+   form.tipo?.addEventListener('change',async()=>{await depChanged();updateBudgetWarning()});
+   form.addEventListener('submit',async e=>{
+     e.preventDefault();
+     const fd=new FormData(form);if(dep.disabled)fd.set('departamento_id',dep.value);fd.set('ejercicio',year);
+     try{
+       const d=await App.api('api.php?route=movimientos/create',{method:'POST',body:fd});
+       if(d.warning?.code==='OVER_BUDGET')App.toast(`Movimiento registrado: ${d.folio}. Excedente: ${App.money(d.warning.excedente)}`,'warning');
+       else App.toast('Movimiento registrado: '+d.folio);
+       setTimeout(()=>location.href='?view=movimientos',1100)
+     }catch(err){App.toast(err.message,'error')}
+   });
+   boot();
  }
 })();

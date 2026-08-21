@@ -17,8 +17,9 @@
           <label>Solicitud autorizada<select name="solicitud_id" id="authorizedRequest"><option value="">Movimiento directo</option></select></label>
           <label>Departamento<select name="departamento_id" id="movementFormDepartment" required></select></label>
           <label>Fecha<input name="fecha" type="date" required></label>
-          <label>Monto<input name="monto" type="number" min="0.01" step="0.01" required></label>
+          <label>Monto<input name="monto" id="movementAmount" type="number" min="0.01" step="0.01" required></label>
           <label>Sub-item de salida<select name="subitem_id" id="movementFormSubitem"><option value="">Sin sub-item</option></select></label>
+          <div id="movementBudgetWarning" class="budget-warning full hidden" role="status" aria-live="polite"><strong>Atención: el monto excede el disponible</strong><span id="movementBudgetWarningText"></span><small>El movimiento puede continuar y quedará registrado con saldo disponible negativo.</small></div>
           <label class="full">Concepto / uso<textarea name="concepto" rows="3" placeholder="Describe de forma breve y clara el uso del recurso..." required></textarea></label>
         </div>
       </section>
@@ -49,6 +50,6 @@
     <div class="flow-step"><span>2</span><div><b>Registro</b><small>Se conserva quién realizó el movimiento.</small></div></div>
     <div class="flow-step"><span>3</span><div><b>Folio</b><small>Se genera automáticamente al guardar.</small></div></div>
     <div class="flow-step"><span>4</span><div><b>Seguimiento</b><small>Aclaraciones y evidencia quedan ligadas.</small></div></div>
-    <div class="available-box"><span>Disponible del departamento</span><strong id="movementAvailable">$0.00</strong><small>El sistema valida el saldo antes de registrar una salida.</small></div>
+    <div class="available-box"><span>Disponible del departamento</span><strong id="movementAvailable">$0.00</strong><small>Si la salida excede el saldo, el sistema mostrará una advertencia pero permitirá registrarla.</small></div>
   </aside>
 </div>

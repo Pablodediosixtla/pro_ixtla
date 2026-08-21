@@ -850,3 +850,10 @@
 
 /* V4.12 — perfiles de alcance PROPIO */
 .dashboard-grid-own{grid-template-columns:minmax(0,1fr)}
+
+/* V4.16 · Advertencia no bloqueante por sobreejercicio */
+.budget-warning{border:1px solid #e6c77f;background:#fff8e8;color:#725316;border-radius:14px;padding:12px 14px;display:grid;gap:3px}
+.budget-warning strong{font-size:.75rem;color:#775410}.budget-warning span{font-size:.68rem;font-weight:750}.budget-warning small{font-size:.62rem;color:#8a6d31}
+.budget-warning.hidden{display:none!important}
+.available-box.over-budget{border-color:#e6c77f;background:linear-gradient(135deg,#fff6df,#fffaf0)}
+.available-box.over-budget strong{color:#9a6811}
