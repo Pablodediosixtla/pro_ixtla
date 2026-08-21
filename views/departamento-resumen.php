@@ -25,7 +25,8 @@ $requestedYear=(int)($_GET['year']??date('Y'));
 </section>
 
 <div class="department-kpi-grid">
-  <article class="department-kpi-card assigned"><span class="department-kpi-icon">▣</span><div><small>Presupuesto asignado</small><strong id="departmentAssigned">$0.00</strong></div></article>
+  <article class="department-kpi-card assigned"><span class="department-kpi-icon"><?=nav_icon('bank')?></span><div><small>Presupuesto asignado</small><strong id="departmentAssigned">$0.00</strong></div></article>
+  <article class="department-kpi-card entries"><span class="department-kpi-icon">↗</span><div><small>Entradas</small><strong id="departmentEntries">$0.00</strong></div></article>
   <article class="department-kpi-card available"><span class="department-kpi-icon">◫</span><div><small>Disponible</small><strong id="departmentAvailable">$0.00</strong></div></article>
   <article class="department-kpi-card spent"><span class="department-kpi-icon">↘</span><div><small>Ejercido</small><strong id="departmentSpent">$0.00</strong></div></article>
   <article class="department-kpi-card percent"><span class="department-kpi-icon">◔</span><div><small>% ejercido</small><strong id="departmentPercent">0%</strong></div></article>
@@ -39,7 +40,7 @@ $requestedYear=(int)($_GET['year']??date('Y'));
   <section class="panel department-actions-panel">
     <div class="panel-head"><div><span class="eyebrow">ACCIONES</span><h2>Operación del departamento</h2></div></div>
     <div class="department-action-list">
-      <?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="department-action primary" href="?view=nuevo-movimiento"><span>＋</span><div><b>Registrar movimiento</b><small>Entrada o salida de recurso</small></div><i>›</i></a><?php endif;?>
+      <?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="department-action primary" href="?view=nuevo-movimiento"><span>⇄</span><div><b>Registrar movimiento</b><small>Entrada o salida de recurso</small></div><i>›</i></a><?php endif;?>
       <?php if(nav_ok($perms,'MOVIMIENTO_VER')):?><a class="department-action" id="departmentMovementsLink" href="?view=movimientos"><span>⇄</span><div><b>Ver movimientos</b><small>Folios y registros del departamento</small></div><i>›</i></a><?php endif;?>
       <?php if(nav_ok($perms,'BITACORA_VER')):?><a class="department-action" href="?view=bitacora"><span>✓</span><div><b>Ver bitácora</b><small>Trazabilidad y auditoría</small></div><i>›</i></a><?php endif;?>
       <a class="department-action" href="#departmentCategories"><span>▤</span><div><b>Subcategorías</b><small>Distribución completa del gasto</small></div><i>↓</i></a>

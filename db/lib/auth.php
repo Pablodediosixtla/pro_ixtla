@@ -43,6 +43,10 @@ function user_role_codes(array $user): array {
     )));
 }
 
+function user_has_any_role(array $user, array $roles): bool {
+    return (bool) array_intersect(user_role_codes($user), $roles);
+}
+
 function user_is_global(array $user): bool {
     foreach ($user['assignments'] ?? [] as $a) {
         if (($a['scope'] ?? '') === 'GLOBAL') return true;

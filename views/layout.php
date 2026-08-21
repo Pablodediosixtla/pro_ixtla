@@ -9,6 +9,9 @@ function nav_icon(string $name): string {
         'users'=>'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
         'shield'=>'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
         'wallet'=>'<path d="M20 7V6a2 2 0 0 0-2-2H5a3 3 0 0 0 0 6h15v10H5a3 3 0 0 1-3-3V7"/><path d="M16 14h.01"/>',
+        'bank'=>'<path d="M3 10h18"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8"/><path d="M2 21h20M12 3 2 8h20L12 3Z"/>',
+        'file-lines'=>'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+        'payments'=>'<path d="M4 6h16v12H4z"/><path d="M8 10h8M8 14h5"/><circle cx="18" cy="16" r="3"/><path d="m18 14.5 0 3M16.8 15.3h2.4"/>',
         'tag'=>'<path d="M20.59 13.41 11 3.83V3H4v7h.83l9.58 9.59a2 2 0 0 0 2.82 0l3.36-3.36a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="6.5" r=".5"/>',
         'file'=>'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>',
         'swap'=>'<path d="m7 7-4 4 4 4"/><path d="M3 11h18"/><path d="m17 3 4 4-4 4"/>',
@@ -17,11 +20,13 @@ function nav_icon(string $name): string {
     ];
     return '<svg viewBox="0 0 24 24" aria-hidden="true">'.($icons[$name]??$icons['home']).'</svg>';
 }
-$viewTitles=['dashboard'=>'Resumen','departamentos'=>'Departamentos','usuarios'=>'Usuarios y jerarquía','roles'=>'Roles y permisos','presupuestos'=>'Presupuestos','subitems'=>'Sub-items','solicitudes'=>'Solicitudes','movimientos'=>'Movimientos','nuevo-movimiento'=>'Registrar movimiento','aclaraciones'=>'Aclaraciones y seguimiento','bitacora'=>'Bitácora','departamento-resumen'=>'Resumen de departamento','subcategoria-detalle'=>'Detalle de subcategoría'];
+$viewTitles=['dashboard'=>'Inicio','departamentos'=>'Departamentos','usuarios'=>'Usuarios y jerarquía','roles'=>'Roles y permisos','presupuestos'=>'Presupuestos','pagos'=>'Pagos','subitems'=>'Sub-items','solicitudes'=>'Solicitudes','movimientos'=>'Movimientos','nuevo-movimiento'=>'Registrar movimiento','aclaraciones'=>'Aclaraciones y seguimiento','bitacora'=>'Bitácora','departamento-resumen'=>'Resumen de departamento','subcategoria-detalle'=>'Detalle de subcategoría'];
 $pageTitle=$viewTitles[$view]??'Presupuesto';
 $primary=$user['assignments'][0]??[];
 $roleLabel=$primary['role_name']??(user_role_codes($user)[0]??'Usuario');
 $departmentLabel=$primary['department']??'Alcance municipal';
+$roleCodes=user_role_codes($user);
+$canUsePayments=user_has_any_role($user,['ADMIN','PRESIDENTE','TESORERIA']);
 $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '1';
 ?><!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#31513f"><title><?=htmlspecialchars($pageTitle)?> | Presupuesto Ixtlahuacán</title><link rel="stylesheet" href="css/styles.css?v=<?=rawurlencode($assetVersion)?>"><link rel="stylesheet" href="css/presupuesto.css?v=<?=rawurlencode($assetVersion)?>"></head><body>
@@ -31,8 +36,9 @@ $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '
   <div class="product-badge"><div><span>Presupuesto Municipal</span><small>Control · Trazabilidad · Seguimiento</small></div><span class="product-mark">PM</span></div>
   <nav class="nav-list">
     <div class="nav-section-label">GENERAL</div>
-    <a class="<?=$view==='dashboard'?'active':''?>" href="?view=dashboard"><span class="nav-icon"><?=nav_icon('home')?></span><span>Resumen</span></a>
+    <a class="<?=$view==='dashboard'?'active':''?>" href="?view=dashboard"><span class="nav-icon"><?=nav_icon('home')?></span><span>Inicio</span></a>
     <?php if(nav_ok($perms,'PRESUPUESTO_VER')):?><a class="<?=in_array($view,['presupuestos','departamento-resumen','subcategoria-detalle'],true)?'active':''?>" href="?view=presupuestos"><span class="nav-icon"><?=nav_icon('wallet')?></span><span>Presupuestos</span></a><?php endif;?>
+    <?php if($canUsePayments):?><a class="<?=$view==='pagos'?'active':''?>" href="?view=pagos"><span class="nav-icon"><?=nav_icon('payments')?></span><span>Pagos</span></a><?php endif;?>
 
     <?php if(nav_ok($perms,'SOLICITUD_CREAR')||nav_ok($perms,'SOLICITUD_APROBAR')||nav_ok($perms,'MOVIMIENTO_VER')):?><div class="nav-section-label">OPERACIÓN</div><?php endif;?>
     <?php if(nav_ok($perms,'SOLICITUD_CREAR')||nav_ok($perms,'SOLICITUD_APROBAR')):?><a class="<?=$view==='solicitudes'?'active':''?>" href="?view=solicitudes"><span class="nav-icon"><?=nav_icon('file')?></span><span>Solicitudes</span></a><?php endif;?>
@@ -51,7 +57,7 @@ $assetVersion=trim((string)@file_get_contents(dirname(__DIR__).'/VERSION')) ?: '
 </aside>
 <div class="mobile-sidebar-backdrop" id="sidebarBackdrop"></div>
 <div class="main-area">
-  <header class="topbar"><button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button><div class="topbar-title"><div class="topbar-brand-mini"><img src="img/ixtla/main_logo_shield.png" alt=""></div><div class="topbar-title-copy"><span class="eyebrow">PRESUPUESTO IXTLAHUACÁN</span><h1><?=htmlspecialchars($pageTitle)?></h1></div></div><div class="top-actions"><span class="scope-chip"><?=user_is_global($user)?'Vista municipal':'Mi alcance · '.htmlspecialchars($departmentLabel)?></span><?php if(nav_ok($perms,'MOVIMIENTO_SALIDA_CREAR')||nav_ok($perms,'MOVIMIENTO_ENTRADA_CREAR')):?><a class="btn btn-primary" href="?view=nuevo-movimiento">+ Movimiento</a><?php endif;?></div></header>
+  <header class="topbar"><button class="icon-btn menu-btn" id="openSidebar" aria-label="Abrir menú">☰</button><div class="topbar-title"><div class="topbar-brand-mini"><img src="img/ixtla/main_logo_shield.png" alt=""></div><div class="topbar-title-copy"><span class="eyebrow">PRESUPUESTO IXTLAHUACÁN</span><h1><?=htmlspecialchars($pageTitle)?></h1></div></div><div class="top-actions"><span class="scope-chip"><?=user_is_global($user)?'Vista municipal':'Mi alcance · '.htmlspecialchars($departmentLabel)?></span></div></header>
   <main class="content"><?php include __DIR__.'/'.$view.'.php';?></main>
   <footer class="app-footer"><span>Gobierno Municipal de Ixtlahuacán · Presupuesto Municipal</span><span>Control presupuestal con trazabilidad y auditoría.</span></footer>
 </div></div>

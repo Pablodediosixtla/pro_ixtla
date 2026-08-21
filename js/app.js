@@ -13,12 +13,14 @@ const App={
   },
   money(v){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(v||0))},
   escape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]))},
-  date(v){if(!v)return '—';const d=new Date(v.length===10?v+'T12:00:00':v);return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})},
+  date(v){if(!v)return '—';const raw=String(v);const d=new Date(raw.length===10?raw+'T12:00:00':raw.replace(' ','T'));return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})},
+  datetime(v){if(!v)return '—';const d=new Date(String(v).replace(' ','T'));return d.toLocaleString('es-MX',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})},
   toast(msg,type='ok'){const root=document.getElementById('toastRoot');if(!root)return;const el=document.createElement('div');el.className='toast '+type;el.textContent=msg;root.appendChild(el);setTimeout(()=>el.remove(),3600)},
   years(select){if(!select)return;const y=new Date().getFullYear();select.innerHTML='';for(let i=y+1;i>=y-4;i--){const o=document.createElement('option');o.value=i;o.textContent=i;if(i===y)o.selected=true;select.appendChild(o)}},
   openModal(id){document.getElementById(id)?.classList.remove('hidden');document.getElementById('globalBackdrop')?.classList.remove('hidden');document.body.style.overflow='hidden'},
   closeModals(){document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));document.getElementById('globalBackdrop')?.classList.add('hidden');document.body.style.overflow=''},
   has(p){return(this.user.permissions||[]).includes(p)},
+  toggleExpandable(button){const id=button?.getAttribute('aria-controls');const detail=id?document.getElementById(id):null;if(!detail)return;const open=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!open));detail.hidden=open;button.closest('.expandable-card')?.classList.toggle('open',!open)},
   debounce(fn,ms=280){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}},
   decorateTables(root=document){
     root.querySelectorAll('.table-wrap table').forEach(table=>{

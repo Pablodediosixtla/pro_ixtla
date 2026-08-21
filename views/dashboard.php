@@ -2,14 +2,16 @@
 $dashPrimary=$user['assignments'][0]??[];
 $dashRole=$dashPrimary['role_name']??(user_role_codes($user)[0]??'Usuario');
 $dashDepartment=$dashPrimary['department']??'Municipio';
+$dashFirstName=$user['first_name']??$user['name']??'Usuario';
 ?>
 <section class="dashboard-hero">
   <div class="dashboard-hero-copy">
     <span class="eyebrow">CONTROL PRESUPUESTAL</span>
-    <h2>Hola, <?=htmlspecialchars($user['first_name']??$user['name']??'Usuario')?>.</h2>
+    <h2>Hola, <?=htmlspecialchars($dashFirstName)?>.</h2>
     <p>Consulta presupuesto, salidas, solicitudes y seguimientos desde una vista clara de tu alcance autorizado.</p>
     <div class="hero-meta"><span><?=htmlspecialchars($dashRole)?></span><span><?=htmlspecialchars($dashDepartment)?></span><span><?=user_is_global($user)?'Alcance municipal':'Alcance restringido'?></span></div>
   </div>
+  <div class="mobile-dashboard-welcome">Bienvenido, <strong><?=htmlspecialchars($dashFirstName)?></strong>.</div>
   <div class="dashboard-hero-actions">
     <label class="compact-control dashboard-year-filter">
       <span class="dashboard-year-filter-label">Ejercicio</span>
@@ -19,14 +21,14 @@ $dashDepartment=$dashPrimary['department']??'Municipio';
   </div>
 </section>
 <div class="kpi-grid">
-  <article class="kpi-card"><span class="kpi-icon green">▣</span><small>Presupuesto asignado</small><strong id="kpiAssigned">$0.00</strong><em>Base anual autorizada</em></article>
+  <article class="kpi-card"><span class="kpi-icon green"><?=nav_icon('bank')?></span><small>Presupuesto asignado</small><strong id="kpiAssigned">$0.00</strong><em>Base anual autorizada</em></article>
   <article class="kpi-card"><span class="kpi-icon blue">↗</span><small>Entradas</small><strong id="kpiEntries">$0.00</strong><em>Recursos agregados</em></article>
   <article class="kpi-card"><span class="kpi-icon red">↘</span><small>Salidas</small><strong id="kpiOutputs">$0.00</strong><em>Ejercicio registrado</em></article>
   <article class="kpi-card"><span class="kpi-icon teal">✓</span><small>Disponible</small><strong id="kpiAvailable">$0.00</strong><em>Saldo actual</em></article>
 </div>
 <div class="quick-grid">
   <a href="?view=solicitudes" class="quick-card"><span>▤</span><div><b>Solicitudes pendientes</b><strong id="pendingRequests">0</strong></div></a>
-  <a href="?view=aclaraciones" class="quick-card"><span>◌</span><div><b>Aclaraciones abiertas</b><strong id="openClarifications">0</strong></div></a>
+  <a href="?view=aclaraciones" class="quick-card"><span class="quick-line-icon"><?=nav_icon('file-lines')?></span><div><b>Aclaraciones abiertas</b><strong id="openClarifications">0</strong></div></a>
   <a href="?view=movimientos" class="quick-card"><span>⌕</span><div><b>Consultar movimientos</b><small>Folios, personas y evidencias</small></div></a>
 </div>
 <div class="dashboard-grid">

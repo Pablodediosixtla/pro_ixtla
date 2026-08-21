@@ -1,4 +1,4 @@
-# Presupuesto Ixtlahuacán — V4 / DEP02
+# Presupuesto Ixtlahuacán — V4.7 / DEP02
 
 Aplicación web PHP + MySQL para la administración del presupuesto municipal de Ixtlahuacán. La aplicación es autocontenida y usa exclusivamente el schema `ixtla01_dep02`; no depende del login ni de servicios publicados en `ixtla-app.com`.
 
@@ -18,13 +18,28 @@ Aplicación web PHP + MySQL para la administración del presupuesto municipal de
 - Bitácora de acciones
 - Experiencia responsive y navegación rápida para móvil
 
+
+## Cambios V4.7
+
+- Home móvil recupera el saludo “Bienvenido, <usuario>” sin bloque verde.
+- Inicio reemplaza el título anterior “Resumen”.
+- Se elimina el botón global `+` del encabezado.
+- Resumen por departamento incorpora el totalizador de entradas.
+- Presupuesto asignado usa icono de banco y aclaraciones usa icono de documento.
+- Asignación anual queda reservada a `ADMIN` y `PRESIDENTE`, también en backend.
+- Nuevo módulo **Pagos** para entradas de dinero por departamento y sub-item, visible solo para `ADMIN`, `PRESIDENTE` y `TESORERIA`.
+- Solicitudes, Movimientos y Bitácora usan registros compactos expandibles.
+- El flujo visual de Solicitudes ya no usa scroll horizontal.
+- `sql/08_v47_roles_budget.sql` alinea la base existente removiendo `PRESUPUESTO_ASIGNAR` de Tesorería.
+- El archivo `.env` de la entrega se preserva sin modificaciones.
+
 ## Modelo de acceso
 
 | Rol | Alcance | Uso principal |
 |---|---|---|
 | ADMIN | GLOBAL | Configuración completa, catálogos, usuarios y operación |
 | PRESIDENTE | GLOBAL | Mismo alcance global, priorizando consulta desde móvil |
-| TESORERIA | GLOBAL | Presupuesto, solicitudes, entradas/salidas, aclaraciones y auditoría |
+| TESORERIA | GLOBAL | Consulta presupuestal, pagos/entradas, solicitudes, salidas, aclaraciones y auditoría |
 | DIRECTOR | DEPARTAMENTO | Información y solicitudes de su departamento |
 | SUPERVISOR | JERARQUIA | Él y sus subordinados recursivos en su departamento |
 | SUBORDINADO | PROPIO | Su propia operación y solicitudes |

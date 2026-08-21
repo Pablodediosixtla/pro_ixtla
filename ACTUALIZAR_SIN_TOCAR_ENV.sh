@@ -13,7 +13,7 @@ mkdir -p "$TARGET_DIR"
 BACKUP=""
 if [[ -f "$TARGET_DIR/.env" ]]; then
   BACKUP="$(mktemp)"
-  cp "$TARGET_DIR/.env" "$BACKUP"
+  cp -p "$TARGET_DIR/.env" "$BACKUP"
 fi
 
 rsync -av --delete \
@@ -23,21 +23,15 @@ rsync -av --delete \
   "$SOURCE_DIR/" "$TARGET_DIR/"
 
 if [[ -n "$BACKUP" ]]; then
-  cp "$BACKUP" "$TARGET_DIR/.env"
+  cp -p "$BACKUP" "$TARGET_DIR/.env"
   rm -f "$BACKUP"
-  # Conserva host/usuario/password y apunta al nuevo schema.
-  if grep -q '^DB_NAME=' "$TARGET_DIR/.env"; then
-    sed -i.bak 's/^DB_NAME=.*/DB_NAME=ixtla01_dep02/' "$TARGET_DIR/.env" && rm -f "$TARGET_DIR/.env.bak"
-  else
-    printf '\nDB_NAME=ixtla01_dep02\n' >> "$TARGET_DIR/.env"
-  fi
-  echo "Configuración .env conservada; DB_NAME actualizado a ixtla01_dep02."
+  echo "Configuración .env conservada sin cambios."
+elif [[ -f "$SOURCE_DIR/.env" ]]; then
+  cp -p "$SOURCE_DIR/.env" "$TARGET_DIR/.env"
+  echo "Se copió el .env incluido en esta entrega sin modificarlo."
 else
   cp "$SOURCE_DIR/.env.example" "$TARGET_DIR/.env"
-  if grep -q '^DB_NAME=' "$TARGET_DIR/.env"; then
-    sed -i.bak 's/^DB_NAME=.*/DB_NAME=ixtla01_dep02/' "$TARGET_DIR/.env" && rm -f "$TARGET_DIR/.env.bak"
-  fi
-  echo "No existía .env en destino; se creó desde .env.example. Completa las credenciales localmente."
+  echo "No existía .env; se creó desde .env.example. Completa las credenciales localmente."
 fi
 
 echo "Proyecto actualizado en: $TARGET_DIR"

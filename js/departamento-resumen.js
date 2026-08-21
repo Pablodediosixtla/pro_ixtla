@@ -79,6 +79,7 @@
       document.getElementById('departmentHeroPct').textContent=`${Number(t.ejercido_pct||0).toFixed(1)}%`;
       document.getElementById('departmentOverviewHero').style.setProperty('--dept-color',dep.color_hex||'#31513f');
       document.getElementById('departmentAssigned').textContent=App.money(t.asignado);
+      document.getElementById('departmentEntries').textContent=App.money(t.entradas);
       document.getElementById('departmentAvailable').textContent=App.money(t.disponible);
       document.getElementById('departmentSpent').textContent=App.money(t.salidas);
       document.getElementById('departmentPercent').textContent=`${Number(t.ejercido_pct||0).toFixed(1)}%`;

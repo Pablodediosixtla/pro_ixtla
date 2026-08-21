@@ -10,7 +10,7 @@ if (!isset($_SESSION['user'])) {
 
 $user = $_SESSION['user'];
 $allowed = [
-    'dashboard','departamentos','usuarios','roles','presupuestos','subitems',
+    'dashboard','departamentos','usuarios','roles','presupuestos','pagos','subitems',
     'solicitudes','movimientos','nuevo-movimiento','aclaraciones','bitacora',
     'departamento-resumen','subcategoria-detalle'
 ];
@@ -35,6 +35,10 @@ $viewPermissions = [
 ];
 
 if (isset($viewPermissions[$view]) && !user_has_any_permission($user, $viewPermissions[$view])) {
+    $view='dashboard';
+}
+
+if ($view === 'pagos' && !user_has_any_role($user, ['ADMIN','PRESIDENTE','TESORERIA'])) {
     $view='dashboard';
 }
 

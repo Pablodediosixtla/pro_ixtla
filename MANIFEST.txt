@@ -3,6 +3,7 @@
 ./.gitignore
 ./ACTUALIZAR_SIN_TOCAR_ENV.sh
 ./DEPLOY_AZURE.md
+./MANIFEST.txt
 ./README.md
 ./README_ACTUALIZACION_ENV.md
 ./README_ENV_RECUPERADO.md
@@ -71,6 +72,7 @@
 ./js/departamentos.js
 ./js/login.js
 ./js/movimientos.js
+./js/pagos.js
 ./js/presupuestos.js
 ./js/roles.js
 ./js/solicitudes.js
@@ -87,9 +89,9 @@
 ./sql/05_seed_demo.sql
 ./sql/06_validate_install.sql
 ./sql/07_demo_credentials.sql
+./sql/08_v47_roles_budget.sql
 ./sql/99_install_all.sql
 ./uploads/presupuesto/.gitkeep
-./uploads/presupuesto/.htaccess
 ./views/aclaraciones.php
 ./views/bitacora.php
 ./views/dashboard.php
@@ -99,6 +101,7 @@
 ./views/login.php
 ./views/movimientos.php
 ./views/nuevo-movimiento.php
+./views/pagos.php
 ./views/presupuestos.php
 ./views/roles.php
 ./views/solicitudes.php
