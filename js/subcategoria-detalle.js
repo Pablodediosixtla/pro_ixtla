@@ -5,7 +5,12 @@
   const search=document.getElementById('subcategorySearch');
   const tbody=document.getElementById('subcategoryMovementTable');
   const cards=document.getElementById('subcategoryMovementCards');
+  const drawer=document.getElementById('subcategoryMovementDrawer');
+  const drawerTitle=document.getElementById('subcategoryMovementDrawerTitle');
+  const drawerDetail=document.getElementById('subcategoryMovementDetail');
+  const backdrop=document.getElementById('globalBackdrop');
   let rows=[];
+  let currentMovement=null;
 
   App.years(year);
   if(window.PROIXTLA_REQUESTED_YEAR)year.value=String(window.PROIXTLA_REQUESTED_YEAR);
@@ -34,14 +39,14 @@
 
   function renderDesktop(filtered){
     tbody.innerHTML=filtered.length?filtered.map(r=>`<tr>
-      <td><a class="link-btn" href="?view=movimientos&movement_id=${r.movimiento_id}">${App.escape(r.folio)}</a></td>
+      <td><button class="link-btn subcategory-movement-open-link" type="button" data-view-movement="${r.movimiento_id}">${App.escape(r.folio)}</button></td>
       <td>${App.date(r.fecha)}</td>
       <td><div class="table-primary-cell"><b>${App.escape(r.concepto)}</b>${r.referencia?`<small>${App.escape(r.referencia)}</small>`:''}</div></td>
       <td>${App.escape(r.otorgado_a||'—')}</td>
       <td>${App.escape(r.registrado_por||'—')}</td>
       <td class="amount">${App.money(r.monto)}</td>
       <td>${trackingBadge(r)}</td>
-      <td><a class="btn btn-soft btn-sm" href="?view=movimientos&movement_id=${r.movimiento_id}">Ver</a></td>
+      <td><button class="btn btn-soft btn-sm" type="button" data-view-movement="${r.movimiento_id}">Ver</button></td>
     </tr>`).join(''):'<tr><td colspan="8" class="empty-state">No hay registros que coincidan con la búsqueda.</td></tr>';
     App.decorateTables(tbody.closest('.table-wrap'));
   }
@@ -74,7 +79,7 @@
             <div><small>Seguimiento</small>${trackingBadge(r)}</div>
           </div>
           ${reference}
-          <a class="btn btn-soft movement-activity-open" href="?view=movimientos&movement_id=${r.movimiento_id}">Ver movimiento</a>
+          <button class="btn btn-soft movement-activity-open" type="button" data-view-movement="${r.movimiento_id}">Ver movimiento</button>
         </div>
       </article>`;
     }).join(''):'<div class="empty-state subcategory-card-empty">No hay registros que coincidan con la búsqueda.</div>';
@@ -96,10 +101,59 @@
     button.closest('.movement-activity-card')?.classList.toggle('open',!isOpen);
   }
 
+  function movementDetailHtml(r){
+    const beneficiary=r.otorgado_a||r.beneficiario_nombre||'—';
+    return `<div class="detail-hero">
+      <span class="badge ${r.tipo==='ENTRADA'?'info':'warning'}">${App.escape(r.tipo)}</span>
+      <strong>${App.money(r.monto)}</strong>
+      <small>${App.escape(r.departamento)} · ${App.date(r.fecha)}</small>
+    </div>
+    <div class="detail-grid">
+      <div><small>Concepto</small><b>${App.escape(r.concepto||'—')}</b></div>
+      <div><small>Sub-item</small><b>${App.escape(r.subitem||'—')}</b></div>
+      <div><small>Solicitado por</small><b>${App.escape(r.solicitado_por||'—')}</b></div>
+      <div><small>Otorgado a</small><b>${App.escape(beneficiary)}</b></div>
+      <div><small>Registrado por</small><b>${App.escape(r.registrado_por||'—')}</b></div>
+      <div><small>Método / referencia</small><b>${App.escape(r.metodo_pago||'—')}${r.referencia?' · '+App.escape(r.referencia):''}</b></div>
+    </div>
+    <div class="file-block"><h3>Evidencias</h3>${r.files?.length?r.files.map(f=>`<a href="${f.download_url}">📎 ${App.escape(f.nombre_original)}</a>`).join(''):'<small>Sin archivos adjuntos.</small>'}</div>`;
+  }
+
+  async function openMovement(id){
+    if(!drawer||!drawerDetail)return;
+    try{
+      currentMovement=await App.api('api.php?route=movimientos/get&id='+encodeURIComponent(id));
+      drawerTitle.textContent=currentMovement.folio||'Movimiento';
+      drawerDetail.innerHTML=movementDetailHtml(currentMovement);
+      drawer.classList.remove('hidden');
+      backdrop?.classList.remove('hidden');
+      document.body.style.overflow='hidden';
+    }catch(e){App.toast(e.message,'error')}
+  }
+
+  function closeMovement(){
+    drawer?.classList.add('hidden');
+    backdrop?.classList.add('hidden');
+    document.body.style.overflow='';
+    currentMovement=null;
+  }
+
+  tbody?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-view-movement]');
+    if(btn)openMovement(btn.dataset.viewMovement);
+  });
+
   cards?.addEventListener('click',e=>{
+    const openBtn=e.target.closest('[data-view-movement]');
+    if(openBtn){openMovement(openBtn.dataset.viewMovement);return}
     const summary=e.target.closest('.movement-activity-summary');
     if(summary)toggleCard(summary);
   });
+
+  document.getElementById('closeSubcategoryMovementDrawer')?.addEventListener('click',closeMovement);
+  document.getElementById('continueSubcategoryReview')?.addEventListener('click',closeMovement);
+  backdrop?.addEventListener('click',()=>{if(drawer&&!drawer.classList.contains('hidden'))closeMovement()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&drawer&&!drawer.classList.contains('hidden'))closeMovement()});
 
   async function load(){
     updateUrl();

@@ -46,4 +46,13 @@ $requestedYear=(int)($_GET['year']??date('Y'));
     <div class="empty-state subcategory-card-empty">Cargando movimientos…</div>
   </div>
 </section>
+
+<div class="drawer hidden" id="subcategoryMovementDrawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div><span class="eyebrow">DETALLE DEL MOVIMIENTO</span><h2 id="subcategoryMovementDrawerTitle">Folio</h2></div>
+    <button class="icon-btn" id="closeSubcategoryMovementDrawer" type="button" aria-label="Cerrar detalle">✕</button>
+  </div>
+  <div id="subcategoryMovementDetail"></div>
+  <div class="drawer-actions"><button class="btn btn-primary" id="continueSubcategoryReview" type="button">Seguir revisando subcategoría</button></div>
+</div>
 <script>window.PROIXTLA_DEPARTMENT_ID=<?=json_encode($departmentId)?>;window.PROIXTLA_SUBITEM_ID=<?=json_encode($subitemId)?>;window.PROIXTLA_REQUESTED_YEAR=<?=json_encode($requestedYear)?>;</script>
