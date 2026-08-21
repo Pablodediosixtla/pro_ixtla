@@ -210,3 +210,6 @@ Los sub-items se clasifican como `ENTRADA` o `SALIDA`. Pagos solo consume sub-it
 - Resumen de departamento elimina el totalizador redundante **% ejercido**; el porcentaje permanece en el encabezado del departamento.
 - Administración de **Sub-items** cambia de tabla a registros compactos expandibles/colapsables, conservando edición y distinción ENTRADA/SALIDA.
 - No requiere cambios DDL respecto de V4.8.
+
+## V4.16.1
+- Corrige carga de usuarios por departamento en Registro de movimiento usando la ruta estable departamentos/list.

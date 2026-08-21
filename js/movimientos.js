@@ -131,18 +131,27 @@
        departmentUsers=[];
        return;
      }
-     try{
-       const movementType=(form.tipo?.value||'SALIDA').toUpperCase();
-       const [subs,users]=await Promise.all([
-         App.api('api.php?route=subitems/list&tipo='+encodeURIComponent(movementType)+'&departamento_id='+encodeURIComponent(id)),
-         App.api('api.php?route=usuarios/options&departamento_id='+encodeURIComponent(id))
-       ]);
+     const movementType=(form.tipo?.value||'SALIDA').toUpperCase();
+     const [subsResult,usersResult]=await Promise.allSettled([
+       App.api('api.php?route=subitems/list&tipo='+encodeURIComponent(movementType)+'&departamento_id='+encodeURIComponent(id)),
+       App.api('api.php?route=departamentos/list&usuarios=1&departamento_id='+encodeURIComponent(id))
+     ]);
+
+     if(subsResult.status==='fulfilled'){
+       const subs=subsResult.value||[];
        sub.innerHTML='<option value="">Sin sub-item</option>'+subs.map(s=>`<option value="${s.subitem_id}">${App.escape(s.nombre)}</option>`).join('');
+     }else{
+       sub.innerHTML='<option value="">Sin sub-item</option>';
+       App.toast('No se pudieron cargar los sub-items: '+subsResult.reason.message,'error');
+     }
+
+     if(usersResult.status==='fulfilled'){
+       const users=usersResult.value||[];
        renderDepartmentUsers(users);
        if(!users.length)App.toast('No hay usuarios activos asignados a este departamento','warning');
-     }catch(e){
+     }else{
        renderDepartmentUsers([]);
-       App.toast(e.message,'error');
+       App.toast('No se pudieron cargar los usuarios del departamento: '+usersResult.reason.message,'error');
      }
    }
 

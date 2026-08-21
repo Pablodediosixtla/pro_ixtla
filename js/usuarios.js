@@ -78,7 +78,7 @@
       return;
     }
     try{
-      const opts=await App.api('api.php?route=usuarios/options?departamento_id='+encodeURIComponent(dep));
+      const opts=await App.api('api.php?route=departamentos/list&usuarios=1&departamento_id='+encodeURIComponent(dep));
       bossSel.innerHTML='<option value="">Sin jefe</option>'+
         opts.filter(x=>String(x.usuario_id)!==String(current)).map(x=>
           `<option value="${x.usuario_id}">${App.escape(x.nombre)} · ${App.escape(x.rol||'')}</option>`
