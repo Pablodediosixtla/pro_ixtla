@@ -34,7 +34,8 @@ $requestedYear=(int)($_GET['year']??date('Y'));
 <div class="department-summary-main-grid">
   <section class="panel department-monthly-panel">
     <div class="panel-head"><div><span class="eyebrow">EJECUCIÓN MENSUAL</span><h2>Entradas y salidas</h2></div><span class="legend"><i class="dot entry"></i>Entradas <i class="dot output"></i>Salidas</span></div>
-    <div id="departmentMonthlyChart" class="monthly-bars department-monthly-bars"></div>
+    <div id="departmentMonthlyChart" class="monthly-bars department-monthly-bars" aria-label="Gráfica mensual interactiva del departamento"></div>
+    <div id="departmentMonthlyDetail" class="chart-month-detail hidden" aria-live="polite"></div>
   </section>
   <section class="panel department-actions-panel">
     <div class="panel-head"><div><span class="eyebrow">ACCIONES</span><h2>Operación del departamento</h2></div></div>

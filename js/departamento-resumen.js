@@ -12,17 +12,41 @@
     history.replaceState({},'',url);
   }
 
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const monthShort=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  function showMonthDetail(month,data,button){
+    const chart=document.getElementById('departmentMonthlyChart');
+    const detail=document.getElementById('departmentMonthlyDetail');
+    chart.querySelectorAll('.chart-month-button').forEach(el=>{
+      el.classList.toggle('active',el===button);
+      el.setAttribute('aria-pressed',el===button?'true':'false');
+    });
+    const href=`?view=movimientos&year=${encodeURIComponent(yearSelect.value)}&month=${month}&departamento_id=${departmentId}`;
+    detail.innerHTML=`<div class="chart-month-copy"><small>MES SELECCIONADO</small><strong>${monthNames[month-1]} ${App.escape(yearSelect.value)}</strong></div>
+      <div class="chart-month-metric entry"><span>Entradas</span><b>${App.money(data?.entrada||0)}</b></div>
+      <div class="chart-month-metric output"><span>Salidas</span><b>${App.money(data?.salida||0)}</b></div>
+      <a class="btn btn-soft btn-sm chart-detail-link" href="${href}">Ver movimientos <span>›</span></a>`;
+    detail.classList.remove('hidden');
+  }
+
   function renderMonths(monthly){
     const el=document.getElementById('departmentMonthlyChart');
+    const detail=document.getElementById('departmentMonthlyDetail');
+    detail.classList.add('hidden');
+    detail.innerHTML='';
     const vals=Object.values(monthly||{}).flatMap(x=>[Number(x.entrada||0),Number(x.salida||0)]);
     const max=Math.max(1,...vals);
-    const names=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    el.innerHTML=names.map((name,i)=>{
-      const x=monthly?.[i+1]||{entrada:0,salida:0};
+    el.innerHTML=monthShort.map((name,i)=>{
+      const month=i+1,x=monthly?.[month]||{entrada:0,salida:0};
       const entry=Math.max(3,Number(x.entrada||0)/max*100);
       const output=Math.max(3,Number(x.salida||0)/max*100);
-      return `<div class="month-group"><div class="bars"><i class="bar entry" style="height:${entry}%" title="${App.money(x.entrada)}"></i><i class="bar output" style="height:${output}%" title="${App.money(x.salida)}"></i></div><small>${name}</small></div>`;
+      return `<button type="button" class="month-group chart-month-button" data-month="${month}" aria-pressed="false" aria-label="${monthNames[i]}: entradas ${App.money(x.entrada)}, salidas ${App.money(x.salida)}"><span class="bars"><i class="bar entry" style="height:${entry}%" title="${App.money(x.entrada)}"></i><i class="bar output" style="height:${output}%" title="${App.money(x.salida)}"></i></span><small>${name}</small></button>`;
     }).join('');
+    el.querySelectorAll('.chart-month-button').forEach(button=>button.addEventListener('click',()=>{
+      const month=Number(button.dataset.month);
+      showMonthDetail(month,monthly?.[month]||{entrada:0,salida:0},button);
+    }));
   }
 
   function categoryIcon(code){

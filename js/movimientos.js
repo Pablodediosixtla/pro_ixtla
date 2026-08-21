@@ -4,10 +4,11 @@
  function badge(s){return s==='REGISTRADO'?'success':'danger'}
 
  function initList(){
-   const year=document.getElementById('movementYear'),dep=document.getElementById('movementDepartment'),type=document.getElementById('movementType'),status=document.getElementById('movementStatus'),search=document.getElementById('movementSearch'),drawer=document.getElementById('movementDrawer');
+   const year=document.getElementById('movementYear'),month=document.getElementById('movementMonth'),dep=document.getElementById('movementDepartment'),type=document.getElementById('movementType'),status=document.getElementById('movementStatus'),search=document.getElementById('movementSearch'),drawer=document.getElementById('movementDrawer');
    App.years(year);
    const urlParams=new URLSearchParams(location.search);
    if(urlParams.get('year'))year.value=urlParams.get('year');
+   if(urlParams.get('month'))month.value=urlParams.get('month');
    let rows=[],current=null;
 
    function card(r,index){
@@ -50,6 +51,7 @@
    async function load(){
      try{
        const qs=new URLSearchParams({year:year.value});
+       if(month.value)qs.set('month',month.value);
        if(dep.value)qs.set('departamento_id',dep.value);
        if(type.value)qs.set('tipo',type.value);
        if(status.value)qs.set('estatus',status.value);
@@ -79,7 +81,7 @@
    document.getElementById('openClarificationBtn')?.addEventListener('click',()=>{if(!current)return;const f=document.getElementById('clarificationForm');f.reset();f.movimiento_id.value=current.movimiento_id;App.openModal('clarificationModal')});
    document.getElementById('clarificationForm')?.addEventListener('submit',async e=>{e.preventDefault();try{await App.api('api.php?route=aclaraciones/create',{method:'POST',body:Object.fromEntries(new FormData(e.target))});App.closeModals();App.toast('Aclaración creada');load()}catch(err){App.toast(err.message,'error')}});
    document.getElementById('cancelMovementBtn')?.addEventListener('click',async()=>{if(!current)return;const motivo=prompt('Motivo de cancelación:');if(!motivo)return;try{await App.api('api.php?route=movimientos/cancel',{method:'POST',body:{movimiento_id:current.movimiento_id,motivo}});drawer.classList.add('hidden');document.getElementById('globalBackdrop').classList.add('hidden');App.toast('Movimiento cancelado');load()}catch(e){App.toast(e.message,'error')}});
-   [year,dep,type,status].forEach(x=>x?.addEventListener('change',load));
+   [year,month,dep,type,status].forEach(x=>x?.addEventListener('change',load));
    search?.addEventListener('input',App.debounce(load));
    boot();
  }
